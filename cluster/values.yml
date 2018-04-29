@@ -1,0 +1,10 @@
+name: kbc1
+environment: dev
+dnsZone: manny87.com
+awsRegion: us-east-1
+kubernetesVersion: 1.8.7
+s3StateBucket: kb.clusters.manny87.com
+vpcId: vpc-95332af3
+bastionInstanceType: t2.micro
+masterInstanceType: t2.micro
+nodeInstanceType: t2.micro

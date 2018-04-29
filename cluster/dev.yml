@@ -1,0 +1,179 @@
+apiVersion: kops/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: 2017-05-04T23:21:47Z
+  name: dev.kbc1.manny87.com
+spec:
+  api:
+#    loadBalancer:
+#      type: Public
+#      additionalSecurityGroups:
+#      - sg-d8083091
+  authorization:
+    alwaysAllow: {}
+  channel: stable
+  cloudProvider: aws
+  configBase: s3://kb.clusters.manny87.com/dev.kbc1.manny87.com
+  etcdClusters:
+  - etcdMembers:
+    - instanceGroup: master-us-east-1a
+      name: a
+    - instanceGroup: master-us-east-1b
+      name: b
+    - instanceGroup: master-us-east-1c
+      name: c
+    name: main
+  - etcdMembers:
+    - instanceGroup: master-us-east-1a
+      name: a
+    - instanceGroup: master-us-east-1b
+      name: b
+    - instanceGroup: master-us-east-1c
+      name: c
+    name: events
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  kubernetesVersion: 1.6.6
+  masterPublicName: api.dev.kbc1.manny87.com
+  networkCIDR: 172.31.0.0/16
+  networkID: vpc-95332af3
+  networking:
+    weave: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  sshAccess:
+  - 0.0.0.0/0
+  subnets:
+  - cidr: 172.31.32.0/20
+    id: subnet-1ef51944
+    name: us-east-1a
+    type: Public
+    zone: us-east-1a
+  - cidr: 172.31.0.0/20
+    id: subnet-77113512
+    name: us-east-1b
+    type: Public
+    zone: us-east-1b
+  - cidr: 172.31.64.0/20
+    name: us-east-1c
+    id: subnet-7f20d653
+    type: Public
+    zone: us-east-1c
+  topology:
+#    bastion:
+#      bastionPublicName: bastion.dev.kbc1.manny87.com
+    dns:
+      type: Public
+    masters: public
+    nodes: public
+
+#---
+#
+#apiVersion: kops/v1alpha2
+#kind: InstanceGroup
+#metadata:
+#  creationTimestamp: 2017-05-04T23:21:48Z
+#  labels:
+#    kops.k8s.io/cluster: dev.kbc1.manny87.com
+#  name: bastions
+#spec:
+#  image: kope.io/k8s-1.6-debian-jessie-amd64-hvm-ebs-2017-05-02
+#  machineType: t2.micro
+#  maxSize: 1
+#  minSize: 1
+#  role: Bastion
+#  subnets:
+#  - us-east-1a
+#  - us-east-1b
+#  - us-east-1c
+
+---
+
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: 2017-05-04T23:21:47Z
+  labels:
+    kops.k8s.io/cluster: dev.kbc1.manny87.com
+  name: master-us-east-1a
+spec:
+  image: kope.io/k8s-1.6-debian-jessie-amd64-hvm-ebs-2017-05-02
+  machineType: t2.micro
+  maxSize: 1
+  minSize: 1
+  role: Master
+  rootVolumeSize: 75
+  rootVolumeType: gp2
+  subnets:
+  - us-east-1a
+  additionalSecurityGroups:
+  - sg-d8083091
+
+
+---
+
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: 2017-05-04T23:21:47Z
+  labels:
+    kops.k8s.io/cluster: dev.kbc1.manny87.com
+  name: master-us-east-1b
+spec:
+  image: kope.io/k8s-1.6-debian-jessie-amd64-hvm-ebs-2017-05-02
+  machineType: t2.micro
+  maxSize: 1
+  minSize: 1
+  role: Master
+  rootVolumeSize: 75
+  rootVolumeType: gp2
+  subnets:
+  - us-east-1b
+  additionalSecurityGroups:
+  - sg-d8083091
+
+---
+
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: 2017-05-04T23:21:47Z
+  labels:
+    kops.k8s.io/cluster: dev.kbc1.manny87.com
+  name: master-us-east-1c
+spec:
+  image: kope.io/k8s-1.6-debian-jessie-amd64-hvm-ebs-2017-05-02
+  machineType: t2.micro
+  maxSize: 1
+  minSize: 1
+  role: Master
+  rootVolumeSize: 75
+  rootVolumeType: gp2
+  subnets:
+  - us-east-1c
+  additionalSecurityGroups:
+  - sg-d8083091
+
+
+---
+
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: 2017-05-04T23:21:48Z
+  labels:
+    kops.k8s.io/cluster: dev.kbc1.manny87.com
+  name: nodes
+spec:
+  image: kope.io/k8s-1.6-debian-jessie-amd64-hvm-ebs-2017-05-02
+  machineType: t2.micro
+  maxSize: 3
+  minSize: 3
+  rootVolumeSize: 75
+  rootVolumeType: gp2
+  role: Node
+  subnets:
+  - us-east-1a
+  - us-east-1b
+  - us-east-1c
+  additionalSecurityGroups:
+  - sg-d8083091
