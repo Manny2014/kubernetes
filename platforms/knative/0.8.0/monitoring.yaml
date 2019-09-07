@@ -1,3 +1,4 @@
+# kubectl label nodes --all beta.kubernetes.io/fluentd-ds-ready="true"
 apiVersion: v1
 kind: Namespace
 metadata:

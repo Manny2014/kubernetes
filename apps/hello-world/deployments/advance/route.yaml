@@ -1,0 +1,11 @@
+apiVersion: serving.knative.dev/v1alpha1
+kind: Route
+metadata:
+  name: blue-green-demo
+  namespace: applications
+spec:
+  traffic:
+    - revisionName: blue-green-demo-pjswh
+      percent: 50 # All traffic goes to this revision 
+    - revisionName: blue-green-demo-tc7c5
+      percent: 50 # All traffic goes to this revision

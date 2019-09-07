@@ -1,0 +1,29 @@
+apiVersion: eventing.knative.dev/v1alpha1
+kind: Trigger
+metadata:
+  name: hello-display
+  namespace: event-example
+spec:
+  filter:
+    attributes:
+      type: greeting
+  subscriber:
+    ref:
+     apiVersion: v1
+     kind: Service
+     name: hello-display
+---
+apiVersion: eventing.knative.dev/v1alpha1
+kind: Trigger
+metadata:
+  name: goodbye-display
+  namespace: event-example
+spec:
+  filter:
+    attributes:
+      source: sendoff
+  subscriber:
+    ref:
+     apiVersion: v1
+     kind: Service
+     name: goodbye-display

@@ -1,3 +1,6 @@
+
+---
+# eventing.yaml
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -2153,5 +2156,610 @@ kind: ConfigMap
 metadata:
   name: config-tracing
   namespace: knative-eventing
+
+---
+---
+# in-memory-channel-crd.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    duck.knative.dev/addressable: "true"
+    eventing.knative.dev/release: "v0.8.0"
+  name: imc-addressable-resolver
+rules:
+- apiGroups:
+  - messaging.knative.dev
+  resources:
+  - inmemorychannels
+  - inmemorychannels/status
+  verbs:
+  - get
+  - list
+  - watch
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    duck.knative.dev/channelable: "true"
+    eventing.knative.dev/release: "v0.8.0"
+  name: imc-channelable-manipulator
+rules:
+- apiGroups:
+  - messaging.knative.dev
+  resources:
+  - inmemorychannels
+  - inmemorychannels/status
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - update
+  - patch
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    eventing.knative.dev/release: "v0.8.0"
+  name: imc-controller
+rules:
+- apiGroups:
+  - messaging.knative.dev
+  resources:
+  - inmemorychannels
+  - inmemorychannels/status
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+- apiGroups:
+  - messaging.knative.dev
+  resources:
+  - inmemorychannels/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - endpoints
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  - deployments/status
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    eventing.knative.dev/release: "v0.8.0"
+  name: imc-dispatcher
+rules:
+- apiGroups:
+  - messaging.knative.dev
+  resources:
+  - inmemorychannels
+  - inmemorychannels/status
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - messaging.knative.dev
+  resources:
+  - inmemorychannels/status
+  verbs:
+  - update
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    eventing.knative.dev/release: "v0.8.0"
+    messaging.knative.dev/channel: in-memory-channel
+    messaging.knative.dev/role: dispatcher
+  name: imc-dispatcher
+  namespace: knative-eventing
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    messaging.knative.dev/channel: in-memory-channel
+    messaging.knative.dev/role: dispatcher
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    eventing.knative.dev/release: "v0.8.0"
+  name: imc-controller
+  namespace: knative-eventing
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    eventing.knative.dev/release: "v0.8.0"
+  name: imc-dispatcher
+  namespace: knative-eventing
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    eventing.knative.dev/release: "v0.8.0"
+  name: imc-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: imc-controller
+subjects:
+- kind: ServiceAccount
+  name: imc-controller
+  namespace: knative-eventing
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    eventing.knative.dev/release: "v0.8.0"
+  name: imc-dispatcher
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: imc-dispatcher
+subjects:
+- kind: ServiceAccount
+  name: imc-dispatcher
+  namespace: knative-eventing
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  labels:
+    eventing.knative.dev/release: "v0.8.0"
+    knative.dev/crd-install: "true"
+    messaging.knative.dev/subscribable: "true"
+  name: inmemorychannels.messaging.knative.dev
+spec:
+  additionalPrinterColumns:
+  - JSONPath: .status.conditions[?(@.type=="Ready")].status
+    name: Ready
+    type: string
+  - JSONPath: .status.conditions[?(@.type=="Ready")].reason
+    name: Reason
+    type: string
+  - JSONPath: .status.address.hostname
+    name: Hostname
+    type: string
+  - JSONPath: .metadata.creationTimestamp
+    name: Age
+    type: date
+  group: messaging.knative.dev
+  names:
+    categories:
+    - all
+    - knative
+    - messaging
+    - channel
+    kind: InMemoryChannel
+    plural: inmemorychannels
+    shortNames:
+    - imc
+    singular: inmemorychannel
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      properties:
+        spec:
+          properties:
+            subscribable:
+              properties:
+                subscribers:
+                  items:
+                    properties:
+                      ref:
+                        properties:
+                          apiVersion:
+                            type: string
+                          kind:
+                            type: string
+                          name:
+                            minLength: 1
+                            type: string
+                          namespace:
+                            minLength: 1
+                            type: string
+                          uid:
+                            minLength: 1
+                            type: string
+                        required:
+                        - namespace
+                        - name
+                        - uid
+                        type: object
+                      replyURI:
+                        minLength: 1
+                        type: string
+                      subscriberURI:
+                        minLength: 1
+                        type: string
+                      uid:
+                        minLength: 1
+                        type: string
+                    required:
+                    - uid
+                  type: array
+              type: object
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    eventing.knative.dev/release: "v0.8.0"
+  name: imc-controller
+  namespace: knative-eventing
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      messaging.knative.dev/channel: in-memory-channel
+      messaging.knative.dev/role: controller
+  template:
+    metadata:
+      labels:
+        messaging.knative.dev/channel: in-memory-channel
+        messaging.knative.dev/role: controller
+    spec:
+      containers:
+      - env:
+        - name: CONFIG_LOGGING_NAME
+          value: config-logging
+        - name: CONFIG_OBSERVABILITY_NAME
+          value: config-observability
+        - name: METRICS_DOMAIN
+          value: knative.dev/inmemorychannel-controller
+        - name: SYSTEM_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        image: gcr.io/knative-releases/github.com/knative/eventing/cmd/in_memory/channel_controller@sha256:0eb085815a87cbae0bafc212d5476283dc174b333c4f9166ce76b111f336f3d4
+        name: controller
+        volumeMounts:
+        - mountPath: /etc/config-logging
+          name: config-logging
+      serviceAccountName: imc-controller
+      volumes:
+      - configMap:
+          name: config-logging
+        name: config-logging
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    eventing.knative.dev/release: "v0.8.0"
+  name: imc-dispatcher
+  namespace: knative-eventing
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      messaging.knative.dev/channel: in-memory-channel
+      messaging.knative.dev/role: dispatcher
+  template:
+    metadata:
+      labels:
+        messaging.knative.dev/channel: in-memory-channel
+        messaging.knative.dev/role: dispatcher
+    spec:
+      containers:
+      - env:
+        - name: CONFIG_LOGGING_NAME
+          value: config-logging
+        - name: CONFIG_OBSERVABILITY_NAME
+          value: config-observability
+        - name: METRICS_DOMAIN
+          value: knative.dev/inmemorychannel-dispatcher
+        - name: SYSTEM_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        image: gcr.io/knative-releases/github.com/knative/eventing/cmd/in_memory/channel_dispatcher@sha256:21cadd1185756767cb3cda7a03b1ca3e7df806c21d9d5d1a70d029c9e5d64837
+        name: dispatcher
+        volumeMounts:
+        - mountPath: /etc/config-logging
+          name: config-logging
+      serviceAccountName: imc-dispatcher
+      volumes:
+      - configMap:
+          name: config-logging
+        name: config-logging
+
+---
+---
+# in-memory-channel-provisioner.yaml
+apiVersion: eventing.knative.dev/v1alpha1
+kind: ClusterChannelProvisioner
+metadata:
+  labels:
+    eventing.knative.dev/release: "v0.8.0"
+  name: in-memory
+spec: {}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    eventing.knative.dev/release: "v0.8.0"
+  name: in-memory-channel-controller
+  namespace: knative-eventing
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    eventing.knative.dev/release: "v0.8.0"
+  name: in-memory-channel-controller
+rules:
+- apiGroups:
+  - eventing.knative.dev
+  resources:
+  - channels
+  - channels/status
+  - clusterchannelprovisioners
+  - clusterchannelprovisioners/status
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+- apiGroups:
+  - eventing.knative.dev
+  resources:
+  - channels/finalizers
+  - clusterchannelprovisioners/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    eventing.knative.dev/release: "v0.8.0"
+  name: in-memory-channel-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: in-memory-channel-controller
+subjects:
+- kind: ServiceAccount
+  name: in-memory-channel-controller
+  namespace: knative-eventing
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    eventing.knative.dev/release: "v0.8.0"
+  name: in-memory-channel-controller
+  namespace: knative-eventing
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      clusterChannelProvisioner: in-memory-channel
+      role: controller
+  template:
+    metadata:
+      labels:
+        clusterChannelProvisioner: in-memory-channel
+        role: controller
+    spec:
+      containers:
+      - env:
+        - name: SYSTEM_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        image: gcr.io/knative-releases/github.com/knative/eventing/cmd/in_memory/controller@sha256:bafbbcc72baca0de04c2a0a9dc993909affef3d825ffedd4797bd86d71f1dc54
+        name: controller
+      serviceAccountName: in-memory-channel-controller
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    eventing.knative.dev/release: "v0.8.0"
+  name: in-memory-channel-dispatcher
+  namespace: knative-eventing
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    eventing.knative.dev/release: "v0.8.0"
+  name: in-memory-channel-dispatcher
+rules:
+- apiGroups:
+  - eventing.knative.dev
+  resources:
+  - channels
+  - channels/status
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    eventing.knative.dev/release: "v0.8.0"
+  name: in-memory-channel-dispatcher
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: in-memory-channel-dispatcher
+subjects:
+- kind: ServiceAccount
+  name: in-memory-channel-dispatcher
+  namespace: knative-eventing
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    eventing.knative.dev/release: "v0.8.0"
+  name: in-memory-channel-dispatcher
+  namespace: knative-eventing
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    eventing.knative.dev/release: "v0.8.0"
+  name: in-memory-channel-dispatcher
+  namespace: knative-eventing
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: in-memory-channel-dispatcher
+subjects:
+- kind: ServiceAccount
+  name: in-memory-channel-dispatcher
+  namespace: knative-eventing
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    eventing.knative.dev/release: "v0.8.0"
+  name: in-memory-channel-dispatcher
+  namespace: knative-eventing
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      clusterChannelProvisioner: in-memory-channel
+      role: dispatcher
+  template:
+    metadata:
+      labels:
+        clusterChannelProvisioner: in-memory-channel
+        role: dispatcher
+    spec:
+      containers:
+      - env:
+        - name: SYSTEM_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        image: gcr.io/knative-releases/github.com/knative/eventing/cmd/in_memory/dispatcher@sha256:75101533d5467d13700f6c1a5fd0daac7af31dc7ca5aa44abe14ffedf2f71c7e
+        name: dispatcher
+      serviceAccountName: in-memory-channel-dispatcher
 
 ---
