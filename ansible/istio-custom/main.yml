@@ -1,0 +1,5 @@
+---
+minimum_cluster_version: 1.9.0
+
+istio_namespace: istio-system
+

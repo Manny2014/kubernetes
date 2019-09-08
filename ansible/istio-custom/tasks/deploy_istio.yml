@@ -1,0 +1,28 @@
+
+
+
+
+# Generate wil helm
+- name: Base path names for {{item}}
+  set_fact:
+    istio_init_template_path: "{{role_path}}/istio-generated.yaml"
+
+- name: Generate template Istio 
+  shell: "helm template {{role_path}}/installations/{{istio_version}}/helm/istio --namespace {{istio_namespace}} -f {{role_path}}/templates/{{istio_version}}/values/default.yml > {{istio_init_template_path}}"
+  ignore_errors: false
+
+- name: Deploy Istio 
+  shell: "{{ cmd_path }} -n {{istio_namespace}} apply -f {{istio_init_template_path}}"
+  ignore_errors: true # TODO: Should not ignore
+
+
+- include_tasks: deploy_istio_verify.yml
+  with_items:
+     - pilot
+     - istio-ingressgateway
+     - security
+     - grafana
+     - prometheus
+     - kiali
+     - telemetry
+     - sidecarInjectorWebhook

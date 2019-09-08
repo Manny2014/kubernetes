@@ -1,0 +1,29 @@
+
+
+# AWS
+
+- include_tasks: assert_eksctl.yml
+  when:
+  - platform == "aws" 
+
+## DEPLOY ACTIONS
+- include_tasks: template_eksctl_config.yml
+  when:
+  - platform == "aws"
+
+- include_tasks: create_eksctl_cluster.yml
+  when:
+  - platform == "aws"
+  - action == "deploy"
+
+- include_tasks: configure_kubeconfig.yml
+  when:
+  - platform == "aws"
+  - action != "delete"
+
+## DELETE ACTIONS
+
+- include_tasks: delete_eksctl_cluster.yml
+  when:
+  - platform == "aws"
+  - action == "delete"

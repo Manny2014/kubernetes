@@ -1,0 +1,55 @@
+
+aws:
+  region: us-east-1
+  vpc: 
+    id: vpc-95332af3
+    cidr: "172.31.0.0/16"
+    subnets:
+      # must provide 'private' and/or 'public' subnets by availibility zone as shown
+      private:
+        us-east-1a:
+          id: "subnet-1ef51944"
+          cidr: "172.31.32.0/20"
+
+        us-east-1b:
+          id: "subnet-77113512"
+          cidr: "172.31.0.0/20"
+
+        us-east-1c:
+          id: "subnet-7f20d653"
+          cidr: "172.31.64.0/20"
+
+      public:
+        us-east-1a:
+          id: "subnet-1ef51944"
+          cidr: "172.31.32.0/20"
+
+        us-east-1b:
+          id: "subnet-77113512"
+          cidr: "172.31.0.0/20"
+
+        us-east-1c:
+          id: "subnet-7f20d653"
+          cidr: "172.31.64.0/20"
+
+  nodeGroups:
+  - name: ng-public
+    minSize: 5
+    maxSize: 20
+    instanceType: t3.2xlarge
+    ssh: # use existing EC2 key
+      publicKeyName: root
+    labels:
+      nodegroup-type: frontend-workloads
+    iam:
+      attachPolicyARNs:
+      - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
+      - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
+      - arn:aws:iam::aws:policy/ElasticLoadBalancingFullAccess
+      withAddonPolicies:
+        autoScaler: true
+        ebs: true
+        fsx: true
+        efs: true
+        albIngress: true
+    availabilityZones: ["us-east-1a","us-east-1b","us-east-1c"]

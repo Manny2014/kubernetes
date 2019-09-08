@@ -1,0 +1,16 @@
+
+
+
+- name: Check is eksctl installed
+  shell: command -v eksctl >/dev/null 2>&1
+  register: eksctl_exist
+
+- name: "debug msg check eksctl"
+  debug: 
+    msg: "{{ eksctl_exist.rc }}"
+
+- name: "Assert eksctl exists"
+  assert:
+    that:
+      - eksctl_exist.rc == 0
+    msg: "Ensure eksctl is installed"

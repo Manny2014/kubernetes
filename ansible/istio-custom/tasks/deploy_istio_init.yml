@@ -1,0 +1,25 @@
+
+
+
+
+# Generate wil helm
+- name: Base path names for {{item}}
+  set_fact:
+    istio_init_template_path: "{{role_path}}/istio-init-generated.yaml"
+
+- name: Generate template istio init
+  shell: "helm template {{role_path}}/installations/{{istio_version}}/helm/istio-init --namespace {{istio_namespace}} -f {{role_path}}/templates/{{istio_version}}/values/default.yml > {{istio_init_template_path}}"
+  ignore_errors: false
+
+- name: Deploy istio init
+  shell: "{{ cmd_path }} -n {{istio_namespace}} apply -f {{istio_init_template_path}}"
+  ignore_errors: true # TODO: Should not ignore
+
+- command: "{{ cmd_path }} -n {{istio_namespace}} get jobs -o custom-columns=STATUS:.status.conditions[0].type"
+  register: istio_init_results
+  retries: 10
+  until: istio_init_results.stdout_lines | reject('search','^Complete') | list | count < 3
+
+# - name: Istio-init results
+#   debug:
+#     msg: "{{ istio_init_results }}"

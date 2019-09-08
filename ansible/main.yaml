@@ -17,4 +17,5 @@
       run_once: yes
 
   roles:
-    - istio
+    # - k8s-cluster
+    - istio-custom

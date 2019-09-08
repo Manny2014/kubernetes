@@ -1,0 +1,53 @@
+
+
+
+
+- name: Creates Certs directory
+  file:
+    path: "{{role_path}}/certs/{{item}}"
+    state: directory
+    force: true
+  when:
+  - self_signed_certs
+
+- name: Base path names for {{item}}
+  set_fact:
+    base_path: "{{role_path}}/certs/{{item}}/{{item}}.{{domain}}"
+
+- name: Generate {{item}} OpenSSL private key with the default values (4096 bits, RSA)
+  openssl_privatekey:
+    path: "{{base_path}}.key"
+    force: true
+  when:
+  - self_signed_certs
+
+
+- name: Generate {{item}} OpenSSL Certificate Signing Request
+  openssl_csr:
+    path: "{{base_path}}.csr"
+    privatekey_path: "{{base_path}}.key"
+    subject_alt_name: "{{ item.value | map('regex_replace', '^', 'DNS:') | list }}"
+    force: true
+  with_dict:
+    dns_server:
+    - "*.{{domain}}"
+    # - "{{item}}.{{domain}}"
+    # - "{{item}}.{{istio_namespace}}.svc"
+    # - "{{item}}.{{istio_namespace}}.svc.cluster"
+    # - "{{item}}.{{istio_namespace}}.svc.cluster.local"
+    
+- name: Generate {{item}} Self Certificate Signed OpenSSL certificate
+  openssl_certificate:
+    path: "{{base_path}}.cer"
+    privatekey_path: "{{base_path}}.key"
+    csr_path: "{{base_path}}.csr"
+    provider: selfsigned
+    force: true
+  when:
+  - self_signed_certs
+
+- name: Create K8s secret {{item}}
+  shell: "{{ cmd_path }} -n {{istio_namespace}} create secret tls {{item}}-ingressgateway-certs --key {{base_path}}.key --cert {{base_path}}.cer"
+  ignore_errors: true
+
+

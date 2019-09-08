@@ -1,0 +1,8 @@
+cluster_name: ansible-eks-custer
+
+platform: aws
+
+provider: eksctl
+
+# delete,deploy,configure
+action: deploy

@@ -1,0 +1,24 @@
+---
+
+# oc or k8s, oc
+cluster_flavour: k8s
+
+istio_version: 1.2.5
+
+
+kiali:
+  username: admin
+  password: admin
+
+secret:
+  apiVersion: v1
+  kind: Secret
+  metadata:
+    name: kiali
+    namespace: istio-system
+    labels:
+      app: kiali
+  type: Opaque
+  data:
+    username: "{{ kiali.username | b64encode}}"
+    passphrase: "{{ kiali.password | b64encode}}"

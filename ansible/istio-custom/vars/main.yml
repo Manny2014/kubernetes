@@ -1,0 +1,11 @@
+---
+minimum_cluster_version: 1.9.0
+
+istio_namespace: istio-system
+
+self_signed_certs: true
+
+domain: us-east-1.elb.amazonaws.com
+
+platform: aws
+

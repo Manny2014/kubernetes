@@ -1,0 +1,10 @@
+
+
+- name: Set eksctl config
+  set_fact:
+   eksctl_config: "{{ role_path }}/templates/{{ platform }}/{{provider}}/generated.yaml"
+
+- name: Template Eksctl config 
+  template:
+    src: "{{ role_path }}/templates/{{ platform }}/{{provider}}/cluster.yaml.j2"
+    dest: "{{ eksctl_config }}"

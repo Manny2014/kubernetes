@@ -1,0 +1,17 @@
+# An example of ClusterConfig object using an existing VPC:
+--- 
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: {{ cluster_name }}
+  region: {{ aws.region }}
+{% if aws.vpc %}  
+vpc: 
+{{ aws.vpc | to_yaml | indent( width=2, indentfirst=True) }}
+{% endif %}  
+
+{% if aws.nodeGroups %}  
+nodeGroups: 
+{{ aws.nodeGroups | to_yaml | indent( width=2, indentfirst=True) }}
+{% endif %}
