@@ -35,3 +35,4 @@ ansible-playbook main.yaml -extra-vars "cluster_name=E2E"
 ## TODO
 - Add full support for eksctl options
 - Add additional provisioners for k8s cluster
+- Remove source controlled version of istio, and download based on version
