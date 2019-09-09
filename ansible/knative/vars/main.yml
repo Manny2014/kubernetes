@@ -1,0 +1,12 @@
+ 
+
+# deploy,delete
+action: deploy
+platform: aws
+
+# Namespaces to be created after installation of all components
+namespaces:
+  serving:
+  - app
+  eventing:
+  - event-example # For sample application(s)

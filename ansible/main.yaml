@@ -17,5 +17,4 @@
       run_once: yes
 
   roles:
-    # - k8s-cluster
-    - istio-custom
+    - knative

@@ -1,0 +1,9 @@
+- name: Delete Knative Serving
+  shell: |
+    kubectl delete -f https://github.com/knative/serving/releases/download/v{{serving.version}}/serving.yaml
+  register: knative_serving_install
+  ignore_errors: true
+
+- name: Print Knative Serving Deletw Results
+  debug:
+    msg: "{{ knative_serving_install }}"

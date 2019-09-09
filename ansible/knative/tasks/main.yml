@@ -1,0 +1,59 @@
+- name: Creates Outputs directory
+  file:
+    path: "{{role_path}}/.generated"
+    state: directory
+    force: true
+  
+# DEPLOY SERVING
+- include_tasks: deploy_serving.yml
+  when:
+  - action == "deploy"
+  - serving
+
+# DEPLOY MONITORING
+- include_tasks: deploy_monitoring.yml
+  when:
+  - action == "deploy"
+  - monitoring
+
+# DEPLOY EVENTING
+- include_tasks: deploy_eventing.yml
+  when:
+  - action == "deploy"
+  - eventing
+
+# DEPLOY SERVING NAMESPACES
+- include_tasks: deploy_namespaces.yml
+  when:
+  - action == "deploy"
+  - serving
+  with_items: "{{namespaces.serving}}"
+  vars:
+    type: serving
+ 
+# DEPLOY EVENTING NAMESPACES
+- include_tasks: deploy_namespaces.yml
+  when:
+  - action == "deploy"
+  - eventing
+  with_items: "{{namespaces.eventing}}"
+  vars:
+    type: eventing
+
+# DEPLOY SERVING
+- include_tasks: delete_serving.yml
+  when:
+  - action == "delete"
+  - serving
+
+# DEPLOY MONITORING
+- include_tasks: delete_monitoring.yml
+  when:
+  - action == "delete"
+  - monitoring
+
+# DELETE EVENTING
+- include_tasks: delete_eventing.yml
+  when:
+  - action == "delete"
+  - eventing

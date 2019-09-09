@@ -4,8 +4,11 @@ minimum_cluster_version: 1.9.0
 istio_namespace: istio-system
 
 self_signed_certs: true
+certifitaces_dir: ""
 
 domain: us-east-1.elb.amazonaws.com
 
 platform: aws
 
+# delete,deploy
+actions: deploy

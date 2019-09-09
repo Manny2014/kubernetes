@@ -6,30 +6,67 @@
   shell: |
     {{ cmd_path }} version | sed -En "{{'s/kubernetes.*v([[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+).*/\1/p' if cluster_flavour == 'ocp' else 's/Server Version.*GitVersion.*v([[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+).*/\1/p'}}" | tail -1
   register: vo
+  when:
+  - action == "deploy"
 
 - name: Assert k8s version
   assert:
     that:
       - "vo.stdout is version_compare(minimum_cluster_version,'>=')"
     msg: "Cluster version must be at least {{ minimum_cluster_version }}"
+  when:
+  - action == "deploy"
+
+- name: Creates Outputs directory
+  file:
+    path: "{{role_path}}/.generated"
+    state: directory
+    force: true
+  when:
+  - action == "deploy"
+
+- name: Tmp directory for execution
+  set_fact:
+    tmp_dir: "{{role_path}}/.generated"
 
 # CREATE NS
 - include_tasks: safely_create_namespace.yml
   vars:
     ns_name: 'istio-system'
+  when:
+  - action == "deploy"
 
 # CREATE REQUIRED SECRETS
 - include_tasks: create_secrets.yml
+  when:
+  - action == "deploy"
 
 # INSTALL ISTIO-INIT
 - include_tasks: deploy_istio_init.yml
+  when:
+  - action == "deploy"
 
 # INSTALL ISTIO
 - include_tasks: deploy_istio.yml
-
+  when:
+  - action == "deploy"
 
 # DEPLOY POLICIES
 - include_tasks: deploy_policies.yml
+  when:
+  - action == "deploy"
 
 # DEPLOY GATEWAYS
 - include_tasks: deploy_gateways.yml
+  when:
+  - action == "deploy"
+
+# DELETE ISTIO-INIT
+- include_tasks: delete_istio_init.yml
+  when:
+  - action == "delete"
+
+# DELETE ISTIO
+- include_tasks: delete_istio.yml
+  when:
+  - action == "delete"

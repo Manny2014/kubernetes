@@ -1,0 +1,23 @@
+
+
+- name: Deploy Knative Serving
+  shell: |
+    kubectl apply --selector knative.dev/crd-install=true -f https://github.com/knative/serving/releases/download/v{{serving.version}}/serving.yaml
+    kubectl apply -f https://github.com/knative/serving/releases/download/v{{serving.version}}/serving.yaml
+  register: knative_serving_resp
+
+- name: Print Knative Serving Install Results
+  debug:
+    msg: "{{ knative_serving_resp }}"
+
+- include_tasks: ../../common/tasks/verify_pod.yml
+  with_items:
+  - activator
+  - autoscaler
+  - controller
+  - webhook
+  vars:
+    label: app
+    namespace: knative-serving 
+    condition: '>='
+    condition_expected_value: 1

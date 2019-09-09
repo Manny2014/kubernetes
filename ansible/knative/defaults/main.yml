@@ -1,0 +1,12 @@
+
+serving:
+  enabled: true
+  version: 0.8.1
+  
+eventing:
+  enabled: true
+  version: 0.8.0
+
+# Will take serving version
+monitoring:
+  enabled: true

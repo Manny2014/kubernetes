@@ -1,9 +1,0 @@
-- name: Create K8scluster 
-  shell: |
-    eksctl delete cluster -f {{ eksctl_config }}
-  register: k8s_eksctl_create
-
-
-- name: "debug msg delete eksctl cluster"
-  debug: 
-    msg: "{{ k8s_eksctl_create }}"

@@ -1,0 +1,20 @@
+- name: Deploy Knative Eventing
+  shell: |
+    kubectl apply --selector knative.dev/crd-install=true -f https://github.com/knative/eventing/releases/download/v{{eventing.version}}/release.yaml
+    kubectl apply -f https://github.com/knative/eventing/releases/download/v{{eventing.version}}/release.yaml
+  register: knative_eventing_install
+
+- name: Print Knative Eventing Install Results
+  debug:
+    msg: "{{ knative_eventing_install }}"
+
+- include_tasks: ../../common/tasks/verify_pod.yml
+  with_items:
+  - eventing-controller
+  - sources-controller
+  - eventing-webhook
+  vars:
+    label: app
+    namespace: knative-eventing 
+    condition: '>='
+    condition_expected_value: 1

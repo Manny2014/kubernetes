@@ -1,0 +1,21 @@
+
+- name: Set Namespace file destination for {{item}}
+  set_fact:
+    ns_dest_path: "{{role_path}}/.generated/{{item}}.yml"
+
+- name: Template Namespace {{item}}
+  template:
+    src: "{{ role_path }}/templates/namespaces/{{type}}.yml"
+    dest: "{{ ns_dest_path }}"
+  vars:
+    namespace: "{{item}}"
+
+- name: Deploy Knative Serving Namespace(s)
+  shell: |
+    kubectl apply -f {{ns_dest_path}}
+  register: knative_serving_ns_resp
+  ignore_errors: true
+
+- name: Print Knative Serving Deploy Namespace(s)
+  debug:
+    msg: "{{ knative_serving_ns_resp }}"

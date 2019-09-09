@@ -1,0 +1,8 @@
+- name: Running eksctl {{cmdaction}} 
+  command: eksctl {{cmdaction}} cluster -f {{ eksctl_config }}
+  register: k8s_eksctl_resp
+  failed_when: "\"{{exclude_fail_msg}}\" not in k8s_eksctl_resp.stdout"
+
+- name: "debug msg {{cmdaction}} eksctl cluster"
+  debug: 
+    msg: "{{ k8s_eksctl_resp }}"

@@ -1,0 +1,9 @@
+- name: Delete Knative Eventing
+  shell: |
+    kubectl delete -f https://github.com/knative/eventing/releases/download/v{{eventing.version}}/release.yaml
+  register: knative_eventing_resp
+  ignore_errors: true
+  
+- name: Print Knative Eventing Delete Results
+  debug:
+    msg: "{{ knative_eventing_resp }}"

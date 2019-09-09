@@ -4,7 +4,7 @@
 
 - name: Creates Certs directory
   file:
-    path: "{{role_path}}/certs/{{item}}"
+    path: "{{tmp_dir}}/certs/{{item}}"
     state: directory
     force: true
   when:
@@ -12,7 +12,16 @@
 
 - name: Base path names for {{item}}
   set_fact:
-    base_path: "{{role_path}}/certs/{{item}}/{{item}}.{{domain}}"
+    base_path: "{{tmp_dir}}/certs/{{item}}/{{item}}.{{domain}}"
+  when:
+  - self_signed_certs
+
+- name: Base path names for {{item}}
+  set_fact:
+    base_path: "{{certifitaces_dir}}/{{item}}.{{domain}}"
+  when:
+  - self_signed_certs == False
+  - certifitaces_dir != ""
 
 - name: Generate {{item}} OpenSSL private key with the default values (4096 bits, RSA)
   openssl_privatekey:
@@ -20,7 +29,6 @@
     force: true
   when:
   - self_signed_certs
-
 
 - name: Generate {{item}} OpenSSL Certificate Signing Request
   openssl_csr:
@@ -35,6 +43,8 @@
     # - "{{item}}.{{istio_namespace}}.svc"
     # - "{{item}}.{{istio_namespace}}.svc.cluster"
     # - "{{item}}.{{istio_namespace}}.svc.cluster.local"
+  when:
+  - self_signed_certs
     
 - name: Generate {{item}} Self Certificate Signed OpenSSL certificate
   openssl_certificate:
@@ -48,6 +58,5 @@
 
 - name: Create K8s secret {{item}}
   shell: "{{ cmd_path }} -n {{istio_namespace}} create secret tls {{item}}-ingressgateway-certs --key {{base_path}}.key --cert {{base_path}}.cer"
-  ignore_errors: true
-
-
+  register: secret_create
+  failed_when: "\"AlreadyExists\" not in secret_create.stderr"

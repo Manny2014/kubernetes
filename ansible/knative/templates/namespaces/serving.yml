@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{item}}
+---
+apiVersion: "networking.istio.io/v1alpha3"
+kind: "DestinationRule"
+metadata:
+  name: "default"
+  namespace: "{{item}}"
+spec:
+  host: "*.{{item}}.svc.cluster.local"
+  trafficPolicy:
+    tls:
+      mode: DISABLE

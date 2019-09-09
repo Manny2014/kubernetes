@@ -1,0 +1,10 @@
+
+- command: "kubectl -n {{namespace}} get pod -l {{label}}={{item}} -o custom-columns=STATUS:.status.phase"
+  register: results
+  retries: 20
+  delay: 5
+  until: results.stdout | regex_findall("^Running", multiline=True, ignorecase=True) | length {{condition}} {{condition_expected_value}} # length >= 1
+  
+- name: Print {{item}} results
+  debug:
+    msg: "{{ results }}"

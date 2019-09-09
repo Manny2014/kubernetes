@@ -1,0 +1,17 @@
+- name: Deploy Knative Monitoring
+  shell: |
+    kubectl apply --selector knative.dev/crd-install=true -f https://github.com/knative/serving/releases/download/v{{serving.version}}/monitoring.yaml
+    kubectl apply -f https://github.com/knative/serving/releases/download/v{{serving.version}}/monitoring.yaml
+  register: knative_monitoring_resp
+
+- name: Print Knative Monitoring Install Results
+  debug:
+    msg: "{{ knative_monitoring_resp }}"
+
+- include_tasks: ../../common/tasks/verify_pod.yml
+  with_items: []
+  vars:
+    label: app
+    namespace: knative-monitoring
+    condition: '>='
+    condition_expected_value: 1
