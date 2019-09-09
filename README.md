@@ -3,7 +3,7 @@
 ## Requirements
 | CLI                     | Required | Notes | 
 |-------------------------|----------|---------|
-| ekscl                   | no       | used for AWS EKS prosivioning   |
+| eksctl                   | no       | used for AWS EKS prosivioning   |
 | kubectl                 | yes      | used for deployment of knative and istio|
 | helm                    | yes      | used for deployment of istio|
 | openssl                 | no       | only required of certs are not provided|
