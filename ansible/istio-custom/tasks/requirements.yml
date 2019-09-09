@@ -1,0 +1,26 @@
+- include_tasks: ../../common/tasks/assert_cli.yml
+  with_items:
+  - kubectl
+  - helm
+
+# IF CERT GEN IS REQUIRED, ENSURE OPENSSL EXISTS
+- include_tasks: ../../common/tasks/assert_cli.yml
+  with_items:
+  - openssl
+  when:
+  - self_signed_certs
+
+- name: Extract server version
+  shell: |
+    {{ cmd_path }} version | sed -En "{{'s/kubernetes.*v([[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+).*/\1/p' if cluster_flavour == 'ocp' else 's/Server Version.*GitVersion.*v([[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+).*/\1/p'}}" | tail -1
+  register: vo
+  when:
+  - action == "deploy"
+
+- name: Assert k8s version
+  assert:
+    that:
+      - "vo.stdout is version_compare(minimum_cluster_version,'>=')"
+    msg: "Cluster version must be at least {{ minimum_cluster_version }}"
+  when:
+  - action == "deploy"

@@ -1,0 +1,7 @@
+- name: Running eksctl delete
+  command: eksctl delete cluster -f {{ eksctl_config }}
+  register: k8s_eksctl_resp
+
+- name: "Debug Message: delete eksctl cluster"
+  debug: 
+    msg: "{{ k8s_eksctl_resp }}"

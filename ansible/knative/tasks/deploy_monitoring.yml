@@ -1,3 +1,9 @@
+- name: Set Fluentd Node label
+  shell: |
+    kubectl label nodes --all beta.kubernetes.io/fluentd-ds-ready="true"
+  register: knative_monitoring_fluentd_label
+  ignore_errors: true # TODO: Remove the need for this ignore....
+
 - name: Deploy Knative Monitoring
   shell: |
     kubectl apply --selector knative.dev/crd-install=true -f https://github.com/knative/serving/releases/download/v{{serving.version}}/monitoring.yaml
@@ -9,7 +15,14 @@
     msg: "{{ knative_monitoring_resp }}"
 
 - include_tasks: ../../common/tasks/verify_pod.yml
-  with_items: []
+  with_items: 
+  - grafana
+  - kibana-logging
+  - kube-state-metrics
+  - node-exporter
+  - prometheus
+  - fluentd-ds
+  - elasticsearch-logging
   vars:
     label: app
     namespace: knative-monitoring

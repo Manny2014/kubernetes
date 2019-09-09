@@ -5,7 +5,7 @@
   shell: command -v eksctl >/dev/null 2>&1
   register: eksctl_exist
 
-- name: "debug msg check eksctl"
+- name: "Debug message: check eksctl"
   debug: 
     msg: "{{ eksctl_exist.rc }}"
 

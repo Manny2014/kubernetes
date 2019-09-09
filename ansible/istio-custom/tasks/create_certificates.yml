@@ -10,7 +10,7 @@
   when:
   - self_signed_certs
 
-- name: Base path names for {{item}}
+- name: Base Cert path for  {{item}}
   set_fact:
     base_path: "{{tmp_dir}}/certs/{{item}}/{{item}}.{{domain}}"
   when:
@@ -59,4 +59,4 @@
 - name: Create K8s secret {{item}}
   shell: "{{ cmd_path }} -n {{istio_namespace}} create secret tls {{item}}-ingressgateway-certs --key {{base_path}}.key --cert {{base_path}}.cer"
   register: secret_create
-  failed_when: "\"AlreadyExists\" not in secret_create.stderr"
+  failed_when: "\"AlreadyExists\" not in secret_create.stderr and \"{{item}}-ingressgateway-certs created\" not in secret_create.stdout"

@@ -10,6 +10,7 @@
 - name: Generate template istio init
   shell: "helm template {{role_path}}/installations/{{istio_version}}/helm/istio-init --namespace {{istio_namespace}} -f {{role_path}}/templates/{{istio_version}}/values/default.yml > {{istio_init_template_path}}"
   ignore_errors: false
+  
 
 - name: Deploy istio init
   shell: "{{ cmd_path }} -n {{istio_namespace}} delete -f {{istio_init_template_path}}"

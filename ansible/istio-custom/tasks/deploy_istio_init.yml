@@ -1,9 +1,5 @@
-
-
-
-
 # Generate wil helm
-- name: Base path names for {{item}}
+- name: Set Istio Init deployment file output
   set_fact:
     istio_init_template_path: "{{tmp_dir}}/istio-init-generated.yaml"
 
@@ -15,9 +11,8 @@
   shell: "{{ cmd_path }} -n {{istio_namespace}} apply -f {{istio_init_template_path}}"
   ignore_errors: true # TODO: Should not ignore
 
-
 - include_tasks: ../../common/tasks/verify_jobs.yml
   vars:
     namespace: "{{istio_namespace}}"
-    condition: '>='
-    condition_expected_value: 6 # TODO: This may vary based on version
+    condition: '<'
+    condition_expected_value: 3 # TODO: This may vary based on version

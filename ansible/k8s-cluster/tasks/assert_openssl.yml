@@ -1,0 +1,16 @@
+
+
+
+- name: Check is openssl installed
+  shell: command -v openssl >/dev/null 2>&1
+  register: eksctl_exist
+
+- name: "Debug message: check openssl"
+  debug: 
+    msg: "{{ eksctl_exist.rc }}"
+
+- name: "Assert openssl exists"
+  assert:
+    that:
+      - eksctl_exist.rc == 0
+    msg: "Ensure openssl is installed"

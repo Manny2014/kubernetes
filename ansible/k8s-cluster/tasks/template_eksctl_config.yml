@@ -1,15 +1,9 @@
 
-- name: Creates Outputs directory
-  file:
-    path: "{{role_path}}/.generated"
-    state: directory
-    force: true
-
 - name: Set eksctl config
   set_fact:
-   eksctl_config: "{{role_path}}/.generated/{{cluster_name}}.yaml"
+   eksctl_config: "{{tmp_dir}}/{{cluster_name}}.yaml"
 
-- name: Template Eksctl config 
+- name: Template Generate eksctl Config 
   template:
     src: "{{ role_path }}/templates/{{ platform }}/{{provider}}/cluster.yaml.j2"
     dest: "{{ eksctl_config }}"

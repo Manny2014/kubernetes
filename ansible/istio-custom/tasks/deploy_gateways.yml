@@ -1,3 +1,2 @@
 - name: Deploy Gateways 
   shell: "{{ cmd_path }} -n {{istio_namespace}} apply -f {{role_path}}/templates/{{istio_version}}/gateways"
-  ignore_errors: false # TODO: Should not ignore

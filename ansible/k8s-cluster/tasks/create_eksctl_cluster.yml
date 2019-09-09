@@ -1,0 +1,8 @@
+- name: Running eksctl create
+  command: eksctl create cluster -f {{ eksctl_config }}
+  register: k8s_eksctl_resp
+  failed_when: "\"AlreadyExistsException\" not in k8s_eksctl_resp.stdout and \"region is ready\" not in k8s_eksctl_resp.stdout"
+
+- name: "Debug Message: create eksctl cluster"
+  debug: 
+    msg: "{{ k8s_eksctl_resp }}"

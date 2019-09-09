@@ -1,9 +1,5 @@
-
-
-
-
 # Generate wil helm
-- name: Base path names for {{item}}
+- name: Set Istio deployment file output
   set_fact:
     istio_init_template_path: "{{tmp_dir}}/istio-generated.yaml"
 
@@ -15,8 +11,7 @@
   shell: "{{ cmd_path }} -n {{istio_namespace}} apply -f {{istio_init_template_path}}"
   ignore_errors: true # TODO: Should not ignore
 
-
-- include_tasks: ../../common/tasks/verify_jobs.yml
+- include_tasks: ../../common/tasks/verify_pod.yml
   with_items:
      - pilot
      - istio-ingressgateway
@@ -31,4 +26,4 @@
     label: app
     namespace: "{{istio_namespace}}"
     condition: '>='
-    condition_expected_value: 6 # TODO: This may vary based on version
+    condition_expected_value: 1

@@ -2,7 +2,7 @@
 - command: "kubectl -n {{namespace}} get jobs -o custom-columns=STATUS:.status.conditions[0].type"
   register: results
   retries: 20
-  until: results.stdout | regex_findall("^Complete", multiline=True, ignorecase=True) | length {{condition}} {{condition_expected_value}} # length >= 1
+  until: results.stdout_lines | reject('search','^Complete') | list | count {{condition}} {{condition_expected_value}} # length >= 1
   
 - name: Print {{item}} results
   debug:

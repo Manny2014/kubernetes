@@ -2,22 +2,31 @@
 
 # AWS
 
-- include_tasks: assert_eksctl.yml
+- name: Creates Outputs directory
+  file:
+    path: "{{role_path}}/.generated"
+    state: directory
+    force: true
   when:
-  - platform == "aws" 
+  - action == "deploy"
+
+- name: Tmp directory for execution
+  set_fact:
+    tmp_dir: "{{role_path}}/.generated"
+    
+- include_tasks: ../../common/tasks/assert_cli.yml
+  with_items:
+  - eksctl
 
 ## DEPLOY ACTIONS
 - include_tasks: template_eksctl_config.yml
   when:
   - platform == "aws"
   
-- include_tasks: run_ekctl_cluster_cmd.yml
+- include_tasks: create_eksctl_cluster.yml
   when:
   - platform == "aws"
   - action == "deploy"
-  vars:
-    cmdaction: create
-    exclude_fail_msg: "AlreadyExistsException"
 
 - include_tasks: configure_kubeconfig.yml
   when:
@@ -26,10 +35,7 @@
 
 ## DELETE ACTIONS
 
-- include_tasks: run_ekctl_cluster_cmd.yml
+- include_tasks: delete_eksctl_cluster.yml
   when:
   - platform == "aws"
   - action == "delete"
-  vars:
-    cmdaction: delete
-    exclude_fail_msg: "a" # TODO: PLACE HOLDER TILL I TEST

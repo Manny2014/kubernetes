@@ -1,0 +1,16 @@
+
+
+
+- name: Check is {{item}} installed
+  shell: command -v {{item}} >/dev/null 2>&1
+  register: cli_exist
+
+- name: "Debug message: check {{item}}"
+  debug: 
+    msg: "{{ cli_exist.rc }}"
+
+- name: "Assert {{item}} exists"
+  assert:
+    that:
+      - cli_exist.rc == 0
+    msg: "Ensure {{item}} is installed"
