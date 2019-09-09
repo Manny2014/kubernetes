@@ -22,6 +22,7 @@
      - policy
      - telemetry
      - sidecarInjectorWebhook
+     - galley
   vars:
     label: app
     namespace: "{{istio_namespace}}"
