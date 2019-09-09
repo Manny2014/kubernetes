@@ -11,8 +11,7 @@
 
 
 ## Known Issues
-- The example broke namespaces does not deploy the broker initially. A delete and re-run fixes it... (Race condition, I believe)
-
+- The example broke namespaces does not deploy the broker initially. A delete and re-run fixes it. (Race condition, I believe...)
 
 
 ## Execution
@@ -31,3 +30,8 @@ git clone https://github.com/Manny2014/kubernetes.git
 cd kubernetes/ansible
 ansible-playbook main.yaml -extra-vars "cluster_name=E2E"
 ```
+
+
+## TODO
+- Add full support for eksctl options
+- Add additional provisioners for k8s cluster
