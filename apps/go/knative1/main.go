@@ -13,6 +13,12 @@ import (
 func Handler(w http.ResponseWriter, r *http.Request) {
 	log.Print("Hello world received a request.")
 
+	defer r.Body.Close()
+
+	reqBody, _ := ioutil.ReadAll(r.Body)
+
+	log.Print("Request body", string(reqBody))
+
 	tr := &http.Transport{
 		MaxIdleConns:       10,
 		IdleConnTimeout:    30 * time.Second,
@@ -39,11 +45,16 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func randoHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "%s!\n", "No so random...")
+}
+
 
 func main() {
 	log.Print("Hello world sample started.")
 
 	http.HandleFunc("/", Handler)
+	http.HandleFunc("/random", randoHandler)
 
 	port := os.Getenv("PORT")
 
