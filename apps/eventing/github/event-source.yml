@@ -1,0 +1,22 @@
+apiVersion: sources.eventing.knative.dev/v1alpha1
+kind: GitHubSource
+metadata:
+  name: githubsourcesample
+  namespace: event-example
+spec:
+  eventTypes:
+    - pull_request
+    - push
+  ownerAndRepository: manny2014/kubernetes
+  accessToken:
+    secretKeyRef:
+      name: githubsecret
+      key: accessToken
+  secretToken:
+    secretKeyRef:
+      name: githubsecret
+      key: secretToken
+  sink:
+    apiVersion: serving.knative.dev/v1alpha1
+    kind: Service
+    name: github-message-dumper
