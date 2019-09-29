@@ -6,8 +6,8 @@
 
 - name: Deploy Knative Monitoring
   shell: |
-    kubectl apply --selector knative.dev/crd-install=true -f https://github.com/knative/serving/releases/download/v{{serving.version}}/monitoring.yaml
-    kubectl apply -f https://github.com/knative/serving/releases/download/v{{serving.version}}/monitoring.yaml
+    kubectl apply --selector knative.dev/crd-install=true -f https://github.com/knative/serving/releases/download/v{{monitoring.version}}/monitoring.yaml
+    kubectl apply -f https://github.com/knative/serving/releases/download/v{{monitoring.version}}/monitoring.yaml
   register: knative_monitoring_resp
 
 - name: Print Knative Monitoring Install Results

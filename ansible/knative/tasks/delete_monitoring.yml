@@ -1,6 +1,6 @@
 - name: Delete Knative Monitoring
   shell: |
-    kubectl delete -f https://github.com/knative/serving/releases/download/v{{serving.version}}/monitoring.yaml
+    kubectl delete -f https://github.com/knative/serving/releases/download/v{{monitoring.version}}/monitoring.yaml
   register: knative_monitoring_install
   ignore_errors: true
   

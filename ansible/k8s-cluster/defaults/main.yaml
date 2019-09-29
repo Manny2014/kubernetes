@@ -33,10 +33,31 @@ aws:
           cidr: "172.31.64.0/20"
 
   nodeGroups:
-  - name: ng-public
-    minSize: 5
+  - name: ng-public-1
+    minSize: 4
     maxSize: 20
     instanceType: t3.2xlarge
+    ssh: # use existing EC2 key
+      publicKeyName: root
+    labels:
+      nodegroup-type: frontend-workloads
+    iam:
+      attachPolicyARNs:
+      - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
+      - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
+      - arn:aws:iam::aws:policy/ElasticLoadBalancingFullAccess
+      withAddonPolicies:
+        autoScaler: true
+        ebs: true
+        fsx: true
+        efs: true
+        albIngress: true
+    availabilityZones: ["us-east-1a","us-east-1b","us-east-1c"]
+    
+  - name: ng-public-2
+    minSize: 4
+    maxSize: 20
+    instanceType: t3.xlarge
     ssh: # use existing EC2 key
       publicKeyName: root
     labels:

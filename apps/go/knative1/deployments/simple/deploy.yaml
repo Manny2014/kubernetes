@@ -1,0 +1,20 @@
+apiVersion: serving.knative.dev/v1alpha1
+kind: Service
+metadata:
+  name: knative-2-go
+  namespace: go-apps
+spec:
+  template:
+    metadata:
+        annotations:
+          autoscaling.knative.dev/minScale: "1"
+          autoscaling.knative.dev/maxScale: "10"
+    spec:
+      containers:
+        - image: docker.io/manny87/knative-go:1.8
+          env:
+            - name: NEXT_APP
+              value: "knative-2-py.py2-apps.example.com"
+            - name: KNATIVE_GATEWAY
+              value: "http://istio-ingressgateway.istio-system.svc.cluster.local"
+---
