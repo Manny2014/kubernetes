@@ -16,6 +16,11 @@
   set_fact:
     tmp_dir: "{{role_path}}/.generated"
 
+# Download istio release
+- include_tasks: get_release.yml
+  when:
+  - action == "deploy"
+
 # CREATE NS
 - include_tasks: safely_create_namespace.yml
   vars:

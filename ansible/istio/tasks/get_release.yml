@@ -1,0 +1,17 @@
+
+- name: Set istio release installation path
+  set_fact:
+    istio_installation_path: "{{tmp_dir}}/istio-{{istio_version}}/install/kubernetes/helm"
+
+- name: Check if Istio Release {{istio_version}} is in cache
+  stat:
+    path: "{{istio_installation_path}}"
+  register: dir_details
+
+- name: Download Istio Release {{istio_version}}
+  shell: curl -L -o {{tmp_dir}}/istio-{{istio_version}}-osx.tar.gz  https://github.com/istio/istio/releases/download/{{istio_version}}/istio-{{istio_version}}-osx.tar.gz
+  when: not dir_details.stat.exists
+
+- name: Unzip Istio Release {{istio_version}}
+  shell: pushd {{tmp_dir}};tar -xvf istio-{{istio_version}}-osx.tar.gz; popd
+  when: not dir_details.stat.exists

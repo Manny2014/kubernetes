@@ -2,6 +2,8 @@
   with_items:
   - kubectl
   - helm
+  - curl
+  - tar
 
 # IF CERT GEN IS REQUIRED, ENSURE OPENSSL EXISTS
 - include_tasks: ../../common/tasks/assert_cli.yml

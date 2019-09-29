@@ -1,6 +1,8 @@
 
+
 aws:
   region: us-east-1
+  version: "1.14"
   vpc: 
     id: vpc-95332af3
     cidr: "172.31.0.0/16"
@@ -53,7 +55,7 @@ aws:
         efs: true
         albIngress: true
     availabilityZones: ["us-east-1a","us-east-1b","us-east-1c"]
-    
+
   - name: ng-public-2
     minSize: 4
     maxSize: 20
