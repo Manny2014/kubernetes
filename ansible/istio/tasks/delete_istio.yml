@@ -1,12 +1,13 @@
 # Generate wil helm
 - name: Base path names for {{item}}
   set_fact:
-    istio_init_template_path: "{{tmp_dir}}/istio-generated.yaml"
+    istio_init_template_path: "{{tmp_dir}}/istio-init-generated.yaml"
+    istio_template_path: "{{tmp_dir}}/istio-generated.yaml"
 
-- name: Generate template Istio 
-  shell: "helm template {{istio_installation_path}}/istio --namespace {{istio_namespace}} -f {{role_path}}/templates/{{istio_version}}/values/default.yml > {{istio_init_template_path}}"
-  ignore_errors: false
+- name: Delete Istio Init
+  shell: "{{ cmd_path }} -n {{istio_namespace}} delete -f {{istio_init_template_path}}"
+  ignore_errors: true # TODO: Should not ignore
 
 - name: Delete Istio 
-  shell: "{{ cmd_path }} -n {{istio_namespace}} delete -f {{istio_init_template_path}}"
+  shell: "{{ cmd_path }} -n {{istio_namespace}} delete -f {{istio_template_path}}"
   ignore_errors: true # TODO: Should not ignore

@@ -11,7 +11,7 @@ istio_values: ""
 # CERT GEN
 self_signed_certs: true
 certifitaces_dir: ""
-domain: us-east-1.elb.amazonaws.com
+domain: kubernetes.manny87.com
 
 
 

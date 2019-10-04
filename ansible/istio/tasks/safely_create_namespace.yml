@@ -7,7 +7,7 @@
   register: r
 
 - name: Create namespace {{ ns_name }}
-  shell: "{{ cmd_path }} apply -f {{ role_path }}/installations/{{istio_version}}/namespace.yaml"
+  shell: "{{ cmd_path }} apply -f {{istio_installation_path}}/namespace.yaml"
   when:
     - r.stderr != ""
     - r.stderr.find("NotFound") != -1

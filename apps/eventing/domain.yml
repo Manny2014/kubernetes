@@ -1,11 +1,7 @@
-   apiVersion: v1
-   kind: ConfigMap
-   metadata:
-     name: config-domain
-     namespace: knative-serving
-   data:
-     manny87.com: ""
-
-
-
-# test
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-domain
+  namespace: knative-serving
+data:
+  manny87.com: ""

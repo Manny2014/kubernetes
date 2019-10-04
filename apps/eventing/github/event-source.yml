@@ -7,6 +7,7 @@ spec:
   eventTypes:
     - pull_request
     - push
+    - commit_comment
   ownerAndRepository: manny2014/kubernetes
   accessToken:
     secretKeyRef:

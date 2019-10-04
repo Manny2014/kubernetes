@@ -1,7 +1,7 @@
 
 - name: Set istio release installation path
   set_fact:
-    istio_installation_path: "{{tmp_dir}}/istio-{{istio_version}}/install/kubernetes/helm"
+    istio_installation_path: "{{tmp_dir}}/istio-{{istio_version}}/install/kubernetes"
 
 - name: Check if Istio Release {{istio_version}} is in cache
   stat:

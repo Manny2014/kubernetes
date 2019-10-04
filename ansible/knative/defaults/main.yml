@@ -2,7 +2,15 @@
 serving:
   enabled: true
   version: 0.9.0
-  
+  domains_config_map:
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: config-domain
+      namespace: knative-serving
+    data:
+      kubernetes.manny87.com: ""
+    
 eventing:
   enabled: true
   version: 0.9.0

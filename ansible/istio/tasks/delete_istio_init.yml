@@ -5,7 +5,7 @@
 # Generate wil helm
 - name: Base path names for {{item}}
   set_fact:
-    istio_init_template_path: "{{tmp_dir}}/istio-init-generated.yaml"
+    istio_init_template_path: "{{tmp_dir}}/helm/istio-init-generated.yaml"
 
 - name: Generate template istio init
   shell: "helm template {{istio_installation_path}}/istio-init --namespace {{istio_namespace}} -f {{role_path}}/templates/{{istio_version}}/values/default.yml > {{istio_init_template_path}}"

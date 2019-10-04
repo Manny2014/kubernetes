@@ -18,8 +18,6 @@
 
 # Download istio release
 - include_tasks: get_release.yml
-  when:
-  - action == "deploy"
 
 # CREATE NS
 - include_tasks: safely_create_namespace.yml
@@ -53,10 +51,6 @@
   when:
   - action == "deploy"
 
-# DELETE ISTIO-INIT
-- include_tasks: delete_istio_init.yml
-  when:
-  - action == "delete"
 
 # DELETE ISTIO
 - include_tasks: delete_istio.yml

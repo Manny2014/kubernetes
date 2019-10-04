@@ -18,3 +18,7 @@
     namespace: knative-eventing 
     condition: '>='
     condition_expected_value: 1
+
+- name: Update Knative Serving Domain ConfigMap
+  shell: "echo \"{{ serving.domains_config_map | to_yaml }}\" | {{cmd_path}} apply -f - "
+  when: serving.domains_config_map != None or serving.domains_config_map != {}

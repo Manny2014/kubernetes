@@ -4,7 +4,7 @@
     istio_init_template_path: "{{tmp_dir}}/istio-generated.yaml"
 
 - name: Generate template Istio 
-  shell: "helm template {{istio_installation_path}}/istio --namespace {{istio_namespace}} -f {{role_path}}/templates/{{istio_version}}/values/default.yml > {{istio_init_template_path}}"
+  shell: "helm template {{istio_installation_path}}/helm/istio --namespace {{istio_namespace}} -f {{role_path}}/templates/{{istio_version}}/values/default.yml > {{istio_init_template_path}}"
   ignore_errors: false
 
 - name: Deploy Istio 
@@ -17,9 +17,9 @@
      - istio-ingressgateway
      - security
      - grafana
-     - prometheus
+    #  - prometheus
      - kiali
-     - policy
+    #  - policy
      - telemetry
      - sidecarInjectorWebhook
      - galley

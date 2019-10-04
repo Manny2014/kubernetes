@@ -1,14 +1,15 @@
 gateways:
   enabled: true
   istio-ingressgateway:
+    autoscaleMin: 1
+    autoscaleMax: 1
     serviceAnnotations:
       service.beta.kubernetes.io/aws-load-balancer-type: alb
-      domainName: "kubernetes.manny87.com" # TODO: NOT SURE IF IT WILL WORK
       # service.beta.kubernetes.io/aws-load-balancer-internal: 0.0.0.0/0
     secretVolumes:
     - name: ingressgateway-certs
       secretName: istio-ingressgateway-certs
-      mountPath: /etc/istio/ingressgateway-certs
+      mountPath: /etc/certs  # BUG IN CHART HAS HARD CODED PATH TO /etc/certs
     - name: ingressgateway-ca-certs
       secretName: istio-ingressgateway-ca-certs
       mountPath: /etc/istio/ingressgateway-ca-certs
@@ -44,9 +45,12 @@ galley:
 #
 # @see charts/mixer/values.yaml, it takes precedence
 mixer:
+  adaptors:
+      prometheus:
+          enabled: false
   policy:
     # if policy is enabled the global.disablePolicyChecks has affect.
-    enabled: true
+    enabled: false
 
   telemetry:
     enabled: true
@@ -55,6 +59,8 @@ mixer:
 #
 # @see charts/pilot/values.yaml
 pilot:
+  autoscaleMin: 2
+  traceSampling: 100
   enabled: true
 
 #
@@ -73,7 +79,7 @@ grafana:
 # addon prometheus configuration
 #
 prometheus:
-  enabled: true
+  enabled: false
 
 #
 # addon jaeger tracing configuration
@@ -90,7 +96,8 @@ kiali:
 
 # Common settings used among istio subcharts.
 global:
-
+  proxy:
+      autoInject: disabled
   k8sIngress:
     enabled: false
     # Gateway used for k8s Ingress resources. By default it is
