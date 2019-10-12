@@ -1,0 +1,63 @@
+apiVersion: messaging.knative.dev/v1alpha1
+kind: Channel
+metadata:
+  name: cj-1
+spec:
+  channelTemplate:
+    apiVersion: messaging.knative.dev/v1alpha1
+    kind: InMemoryChannel
+---
+apiVersion: sources.eventing.knative.dev/v1alpha1
+kind: CronJobSource
+metadata:
+  name: test-cronjob-source
+spec:
+  schedule: '* * * * *'
+  data: '{"message": "Hello world!"}'
+  sink:
+    apiVersion: messaging.knative.dev/v1alpha1
+    kind: Channel
+    name: cj-1
+# ---
+# apiVersion: messaging.knative.dev/v1alpha1
+# kind: Subscription
+# metadata:
+#   name: cronjob-source-sample
+#   namespace: event-example
+# spec:
+#   channel:
+#     apiVersion: messaging.knative.dev/v1alpha1
+#     kind: Channel
+#     name: cj-1
+#   subscriber:
+#     ref:
+#       apiVersion: serving.knative.dev/v1alpha1
+#       kind: Service
+#       name: event-display
+---
+apiVersion: eventing.knative.dev/v1alpha1
+kind: Trigger
+metadata:
+  name: cronjob-source-sample
+spec:
+  broker: default
+  subscriber:
+    ref:
+      apiVersion: serving.knative.dev/v1alpha1
+      kind: Service
+      name: event-display
+---
+
+# This is a very simple Knative Service that writes the incoming CloudEvent to its log.
+
+apiVersion: serving.knative.dev/v1alpha1
+kind: Service
+metadata:
+  name: event-display
+spec:
+  runLatest:
+    configuration:
+      revisionTemplate:
+        spec:
+          container:
+            image: gcr.io/knative-releases/github.com/knative/eventing-sources/cmd/event_display

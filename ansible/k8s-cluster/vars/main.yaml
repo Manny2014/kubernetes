@@ -1,4 +1,4 @@
-cluster_name: ansible-eks-custer
+cluster_name: eman-eks-custer
 
 platform: aws
 

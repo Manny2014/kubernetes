@@ -1,0 +1,76 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: hellomannys.manny2014.com
+spec:
+  group: manny2014.com
+  version: v1
+  scope: Namespaced
+  names:
+    plural: hellomannys
+    singular: hellommany
+    kind: HelloManny
+    shortNames:
+    - hmanny
+  subresources:
+    status: {}
+---
+apiVersion: metacontroller.k8s.io/v1alpha1
+kind: CompositeController
+metadata:
+  name: hello-manny-controller
+spec:
+  generateSelector: true
+  parentResource:
+    apiVersion: manny2014.com/v1
+    resource: hellomannys
+    revisionHistory:
+      fieldPaths:
+      - spec.template
+  childResources:
+  # - apiVersion: v1
+  #   resource: services
+  #   updateStrategy:
+  #     method: InPlace
+  - apiVersion: apps/v1
+    resource: deployments
+    updateStrategy:
+      method: InPlace
+  hooks:
+    sync:
+      webhook:
+        url: http://manny-hello-controller.metacontroller.svc.cluster.local/sync
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: manny-hello-controller
+  namespace: metacontroller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: manny-hello
+  template:
+    metadata:
+      labels:
+        app: manny-hello
+    spec:
+      containers:
+      - name: controller
+        image: docker.io/manny87/hello-controller:2.14
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: manny-hello-controller
+  namespace: metacontroller
+spec:
+  selector:
+    app: manny-hello
+  ports:
+  - port: 80
+    targetPort: 8080

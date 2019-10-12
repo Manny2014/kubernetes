@@ -1,0 +1,72 @@
+
+
+apiVersion: eventing.knative.dev/v1alpha1
+kind: Broker
+metadata:
+  name: default
+spec:
+  channelTemplateSpec:
+    apiVersion: messaging.knative.dev/v1alpha1
+    kind: InMemoryChannel
+---
+apiVersion: messaging.knative.dev/v1alpha1
+kind: Channel
+metadata:
+  name: cj-1
+spec:
+  channelTemplate:
+    apiVersion: messaging.knative.dev/v1alpha1
+    kind: InMemoryChannel
+---
+apiVersion: eventing.knative.dev/v1alpha1
+kind: Trigger
+metadata:
+  name: test-source-sample
+spec:
+  broker: default
+  subscriber:
+    ref:
+      apiVersion: serving.knative.dev/v1alpha1
+      kind: Service
+      name: event-display
+---
+
+apiVersion: messaging.knative.dev/v1alpha1
+kind: Subscription
+metadata:
+  name: containersource-source-sample
+spec:
+  channel:
+    apiVersion: messaging.knative.dev/v1alpha1
+    kind: Channel
+    name: cj-1
+  subscriber:
+    ref:
+      apiVersion: serving.knative.dev/v1alpha1
+      kind: Service
+      name: event-display
+---
+apiVersion: sources.eventing.knative.dev/v1alpha1
+kind: ContainerSource
+metadata:
+  name: test-heartbeats
+spec:
+  template:
+    spec:
+      containers:
+        - image: manny87/heartbeats-007104604b758f52b70a5535e662802b:latest
+          name: heartbeats
+          args:
+            - --period=1
+          env:
+            - name: POD_NAME
+              value: "mypod"
+            - name: POD_NAMESPACE
+              value: "event-test"
+  sink:
+    # apiVersion: serving.knative.dev/v1alpha1
+    # kind: Service
+    # name: event-display
+    apiVersion: messaging.knative.dev/v1alpha1
+    kind: Channel
+    name: cj-1

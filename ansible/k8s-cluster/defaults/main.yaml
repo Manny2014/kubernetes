@@ -37,8 +37,8 @@ aws:
   nodeGroups:
   - name: ng-public-1
     minSize: 3
-    maxSize: 20
-    instanceType: t3.2xlarge
+    maxSize: 3
+    instanceType: t3.large
     ssh: # use existing EC2 key
       publicKeyName: root
     labels:
@@ -59,8 +59,8 @@ aws:
 
   - name: ng-public-2
     minSize: 3
-    maxSize: 20
-    instanceType: t3.xlarge
+    maxSize: 3
+    instanceType: t3.medium
     ssh: # use existing EC2 key
       publicKeyName: root
     labels:
