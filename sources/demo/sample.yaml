@@ -1,0 +1,80 @@
+# Namespace for sample application with eventing enabled
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: knative-samples
+  labels:
+       knative-eventing-injection: enabled
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: knative-consumer
+  namespace: knative-samples
+spec:
+  replicas: 1
+  selector:
+    matchLabels: &labels
+      app: knative-consumer
+  template:
+    metadata:
+      labels: *labels
+    spec:
+      containers:
+        - name: knative-consumer
+          image: docker.io/manny87/knative-consumer-producer:1.10
+          command: ["/app/app"]
+          args: ["-mode=consumer"]
+---
+# Service that exposes helloworld-go app.
+# This will be the subscriber for the Trigger
+  kind: Service
+  apiVersion: v1
+  metadata:
+    name: knative-consumer
+    namespace: knative-samples
+  spec:
+    selector:
+      app: knative-consumer
+    ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+---
+# Knative Eventing Trigger to trigger the helloworld-go service
+apiVersion: eventing.knative.dev/v1alpha1
+kind: Trigger
+metadata:
+  name: knative-consumer
+  namespace: knative-samples
+spec:
+  broker: default
+  filter:
+    attributes:
+      type: manny.sample.event
+      source: manny.test.source
+  subscriber:
+    ref:
+      apiVersion: v1
+      kind: Service
+      name: knative-consumer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: knative-producer
+  namespace: knative-samples
+spec:
+  replicas: 1
+  selector:
+    matchLabels: &labels
+      app: knative-producer
+  template:
+    metadata:
+      labels: *labels
+    spec:
+      containers:
+        - name: knative-producer
+          image: docker.io/manny87/knative-consumer-producer:1.10
+          command: ["/app/app"]
+          args: ["--mode=producer"]

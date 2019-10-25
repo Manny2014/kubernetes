@@ -1,0 +1,10 @@
+apiVersion: sources.manny.dev/v1
+kind: MannySource
+metadata:
+  name: mannysource-sample
+spec:
+  sink:
+    apiVersion: sources.manny.dev/v1alpha1
+    kind: TestSink
+    name: foosink
+    namespace: "default"

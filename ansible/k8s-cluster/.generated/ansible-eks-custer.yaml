@@ -1,0 +1,53 @@
+# An example of ClusterConfig object using an existing VPC:
+--- 
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: ansible-eks-custer
+  region: us-east-1
+  version: "1.14"
+  
+vpc: 
+  cidr: 172.31.0.0/16
+  id: vpc-95332af3
+  subnets:
+    private:
+      us-east-1a: {cidr: 172.31.32.0/20, id: subnet-1ef51944}
+      us-east-1b: {cidr: 172.31.0.0/20, id: subnet-77113512}
+      us-east-1c: {cidr: 172.31.64.0/20, id: subnet-7f20d653}
+    public:
+      us-east-1a: {cidr: 172.31.32.0/20, id: subnet-1ef51944}
+      us-east-1b: {cidr: 172.31.0.0/20, id: subnet-77113512}
+      us-east-1c: {cidr: 172.31.64.0/20, id: subnet-7f20d653}
+
+  
+
+  
+nodeGroups: 
+  - availabilityZones: [us-east-1a, us-east-1b, us-east-1c]
+    iam:
+      attachPolicyARNs: ['arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy', 'arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy',
+        'arn:aws:iam::aws:policy/ElasticLoadBalancingFullAccess']
+      withAddonPolicies: {albIngress: true, autoScaler: true, ebs: true, efs: true,
+        externalDNS: true, fsx: true}
+    instanceType: t3.2xlarge
+    labels: {nodegroup-type: frontend-workloads}
+    maxSize: 20
+    minSize: 3
+    name: ng-public-1
+    ssh: {publicKeyName: root}
+  - availabilityZones: [us-east-1a, us-east-1b, us-east-1c]
+    iam:
+      attachPolicyARNs: ['arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy', 'arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy',
+        'arn:aws:iam::aws:policy/ElasticLoadBalancingFullAccess']
+      withAddonPolicies: {albIngress: true, autoScaler: true, ebs: true, efs: true,
+        externalDNS: true, fsx: true}
+    instanceType: t3.xlarge
+    labels: {nodegroup-type: frontend-workloads}
+    maxSize: 20
+    minSize: 3
+    name: ng-public-2
+    ssh: {publicKeyName: root}
+
+
+# TODO: Add the rest of the support..

@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: py-deploy
+  namespace: py2-apps
+  labels:
+    app: py-deploy
+    version: release
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: py-deploy
+      version: release
+  template:
+    metadata:
+      labels:
+        app: py-deploy
+        version: release
+    spec:
+      containers:
+        - image: docker.io/manny87/knative-py:1.2
+          imagePullPolicy: Always
+          name: svc
+          ports:
+          - containerPort: 8080
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: py-deploy
+  namespace: py2-apps
+  labels:
+    app: py-deploy
+    version: release
+spec:
+  selector:
+    app: py-deploy
+    version: release
+  ports:
+    - port: 80
+      targetPort: 8080
+      name: http-py
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: py-deploy
+  namespace: py2-apps
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - '*'
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: py-deploy
+  namespace: py2-apps
+spec:
+  hosts:
+    - '*'
+  gateways:
+    - py-deploy
+  http:
+    - route:
+      - destination:
+          host: py-deploy.py2-apps.svc.cluster.local
+          port:
+            number: 80
+---
+ apiVersion: networking.istio.io/v1alpha3
+ kind: DestinationRule
+ metadata:
+  name: py-deploy
+  namespace: py2-apps
+ spec:
+   host: py-deploy.py2-apps.svc.cluster.local
+   trafficPolicy:
+     loadBalancer:
+       consistentHash:
+         httpHeaderName: x-manny

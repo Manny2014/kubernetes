@@ -27,6 +27,6 @@ if __name__ == "__main__":
     @timer
     def hello():
         name = request.args.get("name","world")
-        return f'Hello {escape(name)}'
+        return f'{os.environ["HOSTNAME"]} : Hello {escape(name)}'
 
     app.run(debug=True,host="0.0.0.0", port=port if os.environ.get("PORT") != "" else os.environ.get("PORT"))

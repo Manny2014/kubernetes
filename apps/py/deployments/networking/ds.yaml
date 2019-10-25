@@ -1,0 +1,10 @@
+ apiVersion: networking.istio.io/v1alpha3
+ kind: DestinationRule
+ metadata:
+   name: knative-2-py
+ spec:
+   host: knative-2-py.py2-apps.svc.cluster.local
+   trafficPolicy:
+     loadBalancer:
+       consistentHash:
+         httpHeaderName: x-manny

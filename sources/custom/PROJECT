@@ -1,0 +1,7 @@
+version: "2"
+domain: manny.dev
+repo: sample-source
+resources:
+- group: sources
+  version: v1
+  kind: MannySource

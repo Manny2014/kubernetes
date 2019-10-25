@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: "event-example"
+  labels:
+    knative-eventing-injection: enabled
+---
+# Required when MTLS is enabled...
+# TODO: Identify a permanent solution, if it exists...
+apiVersion: "networking.istio.io/v1alpha3"
+kind: "DestinationRule"
+metadata:
+  name: "default"
+  namespace: "event-example"
+spec:
+  host: "*.event-example.svc.cluster.local"
+  trafficPolicy:
+    tls:
+      mode: DISABLE
