@@ -1,0 +1,26 @@
+apiVersion: printer.manny87.com/v1
+kind: ObjectPrinter
+metadata:
+  name: objectprinter-sample
+spec:
+  # Add fields here
+  message: Hello!!
+  printCount: 10
+---
+apiVersion: printer.manny87.com/v1
+kind: ObjectPrinter
+metadata:
+  name: objectprinter-sample-2
+spec:
+  # Add fields here
+  message: Hello-2!!
+  printCount: 10
+---
+apiVersion: printer.manny87.com/v1
+kind: ObjectPrinter
+metadata:
+  name: objectprinter-sample-3
+spec:
+  # Add fields here
+  message: Hello-3!!
+  printCount: 10

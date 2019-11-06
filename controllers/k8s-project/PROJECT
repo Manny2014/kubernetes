@@ -1,0 +1,10 @@
+version: "2"
+domain: manny87.com
+repo: k8s-project
+resources:
+- group: project
+  version: v1
+  kind: ConfigSource
+- group: project
+  version: v1
+  kind: Project

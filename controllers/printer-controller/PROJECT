@@ -1,0 +1,10 @@
+version: "2"
+domain: manny87.com
+repo: printer-controller
+resources:
+- group: printer
+  version: v1
+  kind: ObjectPrinter
+- group: printer
+  version: v1
+  kind: ConfigMapPrinter

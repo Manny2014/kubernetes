@@ -16,4 +16,14 @@ spec:
   host: "*.event-example.svc.cluster.local"
   trafficPolicy:
     tls:
-      mode: DISABLE
+      mode: ISTIO_MUTUAL
+---
+apiVersion: "authentication.istio.io/v1alpha1"
+kind: "Policy"
+metadata:
+  name: "default"
+  namespace: "event-example"
+spec:
+  peers:
+  - mtls:
+      mode: PERMISSIVE

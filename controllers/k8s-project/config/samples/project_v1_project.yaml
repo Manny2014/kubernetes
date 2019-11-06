@@ -1,0 +1,10 @@
+apiVersion: project.manny87.com/v1
+kind: Project
+metadata:
+  name: cool-project
+spec:
+  configSource:
+    sourceType: "Consul"
+    sourceConfig:
+      basePath: "http://localhost:8500"
+      prefix: "manny"

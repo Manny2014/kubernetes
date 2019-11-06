@@ -9,7 +9,6 @@ import (
 	"time"
 )
 
-
 func Handler(w http.ResponseWriter, r *http.Request) {
 	log.Print("Hello world received a request.")
 
@@ -34,12 +33,12 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	resp, err := client.Do(req)
 
 	if err != nil {
-		fmt.Fprintf(w, "Error Occurred  %s!\n",err.Error())
-	}else{
+		fmt.Fprintf(w, "Error Occurred  %s!\n", err.Error())
+	} else {
 		bodyStr, err := ioutil.ReadAll(resp.Body)
-		if err != nil{
-			fmt.Fprintf(w, "Error Occurred  %s!\n",err.Error())
-		}else{
+		if err != nil {
+			fmt.Fprintf(w, "Error Occurred  %s!\n", err.Error())
+		} else {
 			fmt.Fprintf(w, "%s!\n", bodyStr)
 		}
 	}
@@ -49,7 +48,9 @@ func randoHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "%s!\n", "No so random...")
 }
 
+func metrics(w http.ResponseWriter, r *http.Request) {
 
+}
 func main() {
 	log.Print("Hello world sample started.")
 

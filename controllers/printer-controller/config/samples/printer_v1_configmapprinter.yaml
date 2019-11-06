@@ -1,0 +1,7 @@
+apiVersion: printer.manny87.com/v1
+kind: ConfigMapPrinter
+metadata:
+  name: configmapprinter-sample
+spec:
+  information:
+    something: "something"

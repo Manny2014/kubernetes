@@ -1,0 +1,21 @@
+# apiVersion: project.manny87.com/v1
+# kind: ConfigSource
+# metadata:
+#   name: configsource-sample
+# spec:
+#   sourceType: "S3"
+#   sourceConfig:
+#     basePath: "com.er.alexa"
+#     prefix: "manny"
+#     object: "brain.json"
+# ---
+apiVersion: project.manny87.com/v1
+kind: ConfigSource
+metadata:
+  name: configsource-sample-consul
+spec:
+  sourceType: "Consul"
+  sourceConfig:
+    basePath: "http://localhost:8500"
+    prefix: "manny"
+    # object: "test"

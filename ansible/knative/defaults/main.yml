@@ -1,7 +1,7 @@
 
 serving:
   enabled: true
-  version: 0.9.0
+  version: 0.10.0
   domains_config_map:
     apiVersion: v1
     kind: ConfigMap
@@ -13,9 +13,9 @@ serving:
     
 eventing:
   enabled: true
-  version: 0.9.0
+  version: 0.10.0
 
 # Will take serving version
 monitoring:
   enabled: true
-  version: 0.9.0
+  version: 0.10.0

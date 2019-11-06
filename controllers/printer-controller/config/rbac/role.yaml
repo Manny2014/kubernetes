@@ -1,0 +1,60 @@
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: manager-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - printer.manny87.com
+  resources:
+  - configmapprinters
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - printer.manny87.com
+  resources:
+  - configmapprinters/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - printer.manny87.com
+  resources:
+  - objectprinters
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - printer.manny87.com
+  resources:
+  - objectprinters/status
+  verbs:
+  - get
+  - patch
+  - update

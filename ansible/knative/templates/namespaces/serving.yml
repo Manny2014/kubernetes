@@ -12,4 +12,14 @@ spec:
   host: "*.{{item}}.svc.cluster.local"
   trafficPolicy:
     tls:
-      mode: DISABLE
+      mode: ISTIO_MUTUAL
+---
+apiVersion: "authentication.istio.io/v1alpha1"
+kind: "Policy"
+metadata:
+  name: "default"
+  namespace: "{{namespace}}"
+spec:
+  peers:
+  - mtls:
+      mode: PERMISSIVE

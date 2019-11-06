@@ -1,0 +1,78 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  creationTimestamp: null
+  name: configsources.project.manny87.com
+spec:
+  group: project.manny87.com
+  names:
+    kind: ConfigSource
+    listKind: ConfigSourceList
+    plural: configsources
+    singular: configsource
+  scope: ""
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: ConfigSource is the Schema for the configsources API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: ConfigSourceSpec defines the desired state of ConfigSource
+          properties:
+            sourceConfig:
+              properties:
+                basePath:
+                  type: string
+                object:
+                  type: string
+                prefix:
+                  type: string
+              required:
+              - basePath
+              - prefix
+              type: object
+            sourceType:
+              enum:
+              - S3
+              - Consul
+              type: string
+          required:
+          - sourceConfig
+          - sourceType
+          type: object
+        status:
+          description: ConfigSourceStatus defines the observed state of ConfigSource
+          properties:
+            failureCount:
+              format: int64
+              type: integer
+            synced:
+              type: boolean
+          type: object
+      type: object
+  version: v1
+  versions:
+  - name: v1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

@@ -1,0 +1,43 @@
+#apiVersion: v1
+#kind: Namespace
+#metadata:
+#  name: knative-samples
+#---
+apiVersion: "networking.istio.io/v1alpha3"
+kind: "DestinationRule"
+metadata:
+  name: "default"
+  namespace: knative-samples
+spec:
+  host: "*.knative-samples.svc.cluster.local"
+  trafficPolicy:
+    tls:
+      mode: DISABLE
+
+---
+apiVersion: serving.knative.dev/v1alpha1
+kind: Service
+metadata:
+  name: knative-promo
+  namespace: knative-samples
+  # labels:
+  #   serving.knative.dev/visibility: cluster-local
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "1"
+        autoscaling.knative.dev/maxScale: "10"
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - image: docker.io/manny87/prometheus-sample:1.1
+          command: ["/app/app"]
+          args: ["-port=8080"]
+          ports:
+            - name: http1
+              containerPort: 8080
+              protocol: TCP
+---
