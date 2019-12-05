@@ -1,0 +1,38 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Pipeline
+metadata:
+  name: tutorial-pipeline-delete-me
+spec:
+  params:
+  - name: firstThing
+    type: string
+    default: hello
+  - name: secondThing
+    type: string
+    default: world
+  - name: thirdThing
+    type: string
+    default: "!"
+  tasks:
+    - name: first-thing
+      taskRef:
+        name: echo-something
+      params:
+        - name: thing
+          value: $(params.firstThing)
+    - name: second-thing
+      taskRef:
+        name: echo-something
+      params:
+        - name: thing
+          value: $(params.secondThing)
+      runAfter:
+      - first-thing
+    - name: third-thing
+      taskRef:
+        name: echo-something
+      params:
+        - name: thing
+          value: $(params.thirdThing)
+      runAfter:
+      - second-thing

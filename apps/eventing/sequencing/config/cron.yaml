@@ -1,0 +1,17 @@
+apiVersion: sources.eventing.knative.dev/v1alpha1
+kind: CronJobSource
+metadata:
+  name: cronjob-source
+  namespace: knative-samples
+spec:
+  schedule: "*/1 * * * *"
+  data: '{"id": "crony","message": "Hello world!"}'
+  sink:
+    apiVersion: messaging.knative.dev/v1alpha1
+    kind: Sequence
+    name: test-eq
+
+#  sink:
+#    apiVersion: eventing.knative.dev/v1alpha1
+#    kind: Broker
+#    name: default

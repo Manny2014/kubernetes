@@ -1,0 +1,32 @@
+# Generate wil helm
+- name: Set Istio Clusterlocal Gateway deployment file output
+  set_fact:
+    istio_template_path: "{{tmp_dir}}/istio-clusterlocal-gw-generated.yaml"
+
+- name: Generate Clusterlocal Gateway template 
+  shell: |
+    helm template {{istio_installation_path}}/helm/istio --namespace {{istio_namespace}} \
+    --set gateways.custom-gateway.autoscaleMin=1 \
+    --set gateways.custom-gateway.autoscaleMax=2 \
+    --set gateways.custom-gateway.cpu.targetAverageUtilization=60 \
+    --set gateways.custom-gateway.labels.app='cluster-local-gateway' \
+    --set gateways.custom-gateway.labels.istio='cluster-local-gateway' \
+    --set gateways.custom-gateway.type='ClusterIP' \
+    --set gateways.istio-ingressgateway.enabled=false \
+    --set gateways.istio-egressgateway.enabled=false \
+    --set gateways.istio-ilbgateway.enabled=false \
+    -f {{role_path}}/templates/{{istio_version}}/values/values-istio-gateways.yml | sed -e "s/custom-gateway/cluster-local-gateway/g" -e "s/customgateway/clusterlocalgateway/g" > {{istio_template_path}}
+  ignore_errors: false
+
+- name: Deploy Istio Clusterlocal-gw
+  shell: "{{ cmd_path }} -n {{istio_namespace}} apply -f {{istio_template_path}}"
+  ignore_errors: true # TODO: Should not ignore
+
+- include_tasks: ../../common/tasks/verify_pod.yml
+  with_items:
+     - cluster-local-gateway
+  vars:
+    label: app
+    namespace: "{{istio_namespace}}"
+    condition: '>='
+    condition_expected_value: 1

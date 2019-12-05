@@ -55,6 +55,7 @@ func (c *ConsulSource) GetData() (map[string]string, error) {
 		}
 
 		for _, p := range pairs {
+			// <BASE>_<KEY>:
 			k := strings.Replace(p.Key, "/", "_", -1)
 			m[k] = string(p.Value)
 		}

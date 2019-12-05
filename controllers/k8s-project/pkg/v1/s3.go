@@ -3,12 +3,13 @@ package v1
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"io/ioutil"
-	"os"
 )
 
 type S3Source struct {
@@ -44,6 +45,7 @@ func (s *S3Source) GetData() (map[string]string, error) {
 	downloader.Concurrency = 1
 
 	f, _ := os.Create(s.Object)
+
 	defer func() {
 		_ = os.Remove(s.Object)
 	}()

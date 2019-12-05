@@ -1,0 +1,26 @@
+# Namespace for sample application with eventing enabled
+# apiVersion: v1
+# kind: Namespace
+# metadata:
+#   name: default
+#   labels:
+#     knative-eventing-injection: enabled
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: knative-producer
+spec:
+  replicas: 1
+  selector:
+    matchLabels: &labels
+      app: knative-producer
+  template:
+    metadata:
+      labels: *labels
+    spec:
+      containers:
+        - name: knative-producer
+          image: docker.io/manny87/knative-consumer-producer:19.11.09.15.29.54
+          command: ["/app/app"]
+          args: ["-mode=producer","-url=http://default-broker.default.svc.cluster.local"]

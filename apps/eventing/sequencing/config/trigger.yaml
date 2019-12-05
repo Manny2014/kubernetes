@@ -1,0 +1,30 @@
+apiVersion: eventing.knative.dev/v1alpha1
+kind: Trigger
+metadata:
+  name: producer-sequence-trigger
+  namespace: knative-samples
+spec:
+  filter:
+    attributes:
+      type: manny.sample.event
+      source: manny.test.source
+  subscriber:
+    ref:
+      apiVersion: messaging.knative.dev/v1alpha1
+      kind: Sequence
+      name: sequence
+---
+apiVersion: eventing.knative.dev/v1alpha1
+kind: Trigger
+metadata:
+  name: cron-sequence-trigger
+  namespace: knative-samples
+spec:
+  filter:
+    attributes:
+      type: dev.knative.cronjob.event
+  subscriber:
+    ref:
+      apiVersion: messaging.knative.dev/v1alpha1
+      kind: Sequence
+      name: sequence

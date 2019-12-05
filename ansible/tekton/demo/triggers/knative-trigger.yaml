@@ -1,0 +1,17 @@
+# Knative Eventing Trigger to trigger the helloworld-go service
+apiVersion: eventing.knative.dev/v1alpha1
+kind: Trigger
+metadata:
+  name: knative-trigger
+spec:
+  broker: default
+  filter:
+    attributes:
+      type: manny.sample.event
+      source: manny.test.source
+  subscriber:
+    # ref:
+    #   apiVersion: v1
+    #   kind: Service
+    #   name: el-pipeline-listener
+    uri: http://el-pipeline-listener.default.svc.cluster.local:8080

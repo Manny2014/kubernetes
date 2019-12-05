@@ -1,0 +1,27 @@
+---
+apiVersion: messaging.knative.dev/v1alpha1
+kind: Sequence
+metadata:
+  name: test-eq
+  namespace: knative-samples
+spec:
+  channelTemplate:
+    apiVersion: messaging.knative.dev/v1alpha1
+    kind: InMemoryChannel
+  steps:
+    - ref:
+        apiVersion: serving.knative.dev/v1
+        kind: Service
+        name: step-1
+    - ref:
+        apiVersion: serving.knative.dev/v1
+        kind: Service
+        name: step-2
+    - ref:
+        apiVersion: serving.knative.dev/v1
+        kind: Service
+        name: step-3
+  reply:
+    kind: Service
+    apiVersion: v1
+    name: knative-consumer

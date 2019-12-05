@@ -1,0 +1,41 @@
+apiVersion: "networking.istio.io/v1alpha3"
+kind: "DestinationRule"
+metadata:
+  name: "default"
+  namespace: knative-serving
+spec:
+  host: "*.knative-serving.svc.cluster.local"
+  trafficPolicy:
+    tls:
+      mode: DISABLE
+---
+apiVersion: "networking.istio.io/v1alpha3"
+kind: "DestinationRule"
+metadata:
+  name: "default"
+  namespace: knative-eventing
+spec:
+  host: "*.knative-eventing.svc.cluster.local"
+  trafficPolicy:
+    tls:
+      mode: DISABLE
+---
+apiVersion: "authentication.istio.io/v1alpha1"
+kind: "Policy"
+metadata:
+  name: "default"
+  namespace: "knative-eventing"
+spec:
+  peers:
+    - mtls:
+        mode: PERMISSIVE
+---
+apiVersion: "authentication.istio.io/v1alpha1"
+kind: "Policy"
+metadata:
+  name: "default"
+  namespace: "knative-serving"
+spec:
+  peers:
+    - mtls:
+        mode: PERMISSIVE

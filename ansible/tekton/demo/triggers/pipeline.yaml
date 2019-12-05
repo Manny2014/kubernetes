@@ -1,0 +1,35 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: print-task
+spec:
+  inputs:
+    params:
+      - name: message
+        type: string
+        description: print message
+        default: test-message
+  steps:
+    - name: echo-something
+      image: ubuntu
+      command:
+        - echo
+      args:
+        - "$(inputs.params.message)"
+---
+apiVersion: tekton.dev/v1alpha1
+kind: Pipeline
+metadata:
+  name: sink-pipeline
+spec:
+  params:
+  - name: message
+    type: string
+    default: test-pipeline-message
+  tasks:
+    - name: print-1
+      taskRef:
+        name: print-task
+      params:
+        - name: message
+          value: $(params.message)

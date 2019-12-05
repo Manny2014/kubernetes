@@ -45,26 +45,27 @@ func consumer() {
 
 }
 
-func producer() {
+func producer(src string ,srcType string, url string) {
 	counter := 0
+	log.Printf("source=%s, type=%s,url=%s\n",src,srcType,url)
 	for {
 
-		cc , _ := kncloudevents.NewDefaultClient("http://default-broker.knative-samples.svc.cluster.local")
+		log.Println("creating new event")
+		cc , _ := kncloudevents.NewDefaultClient(url)
 		data := &SampleMessage{Sequence: counter, Message: "Some event"}
 
 		newEvent := cloudevents.NewEvent()
 		newEvent.SetID(uuid.New().String())
-		newEvent.SetSource("manny.test.source")
-		newEvent.SetType("manny.sample.event")
+		newEvent.SetSource(src)
+		newEvent.SetType(srcType)
 		newEvent.SetSpecVersion(cloudevents.VersionV02)
 		newEvent.SetData(data)
 
-		// cloudevents.
 		if _, _, err := cc.Send(context.TODO(), newEvent); err != nil {
 			fmt.Println("error sending: %v", err)
 		}
 
-		fmt.Printf("Event sent")
+		log.Printf("Event sent\n")
 		time.Sleep(10000 * time.Millisecond)
 
 		counter += 1
@@ -73,7 +74,14 @@ func producer() {
 
 func main() {
 	var mode string
+	var source string
+	var sourceType string
+	var destUrl string
+
 	flag.StringVar(&mode, "mode", "", "")
+	flag.StringVar(&source, "source", "manny.test.source", "")
+	flag.StringVar(&sourceType, "type", "manny.sample.event", "")
+	flag.StringVar(&destUrl, "url", "http://default-broker.knative-samples.svc.cluster.local", "")
 	flag.Parse()
 	fmt.Println("Mode", mode)
 	if mode == "consumer" {
@@ -81,6 +89,6 @@ func main() {
 		consumer()
 	} else {
 		log.Print("Started producer")
-		producer()
+		producer(source, sourceType, destUrl)
 	}
 }

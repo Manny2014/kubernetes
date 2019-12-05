@@ -1,0 +1,26 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: echo-hello-world
+spec:
+  steps:
+    - name: echo-one
+      image: ubuntu
+      command:
+        - echo
+      args:
+        - "hello world 1"
+    - name: echo-two
+      image: ubuntu
+      command:
+        - echo
+      args:
+        - "hello world 2"
+---
+apiVersion: tekton.dev/v1alpha1
+kind: TaskRun
+metadata:
+  name: echo-hello-world-task-run
+spec:
+  taskRef:
+    name: echo-hello-world-two

@@ -1,0 +1,23 @@
+# Used to define artifacts that can be passed in and out of a tasks
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name:  manny-kubernetes-git
+spec:
+  type: git
+  params:
+    - name: revision
+      value: master
+    - name: url
+      value: https://github.com/Manny2014/kubernetes.git
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: manny-kubernetes-image
+spec:
+  type: image
+  params:
+    - name: url
+      value: manny87/tekton-demo
+---

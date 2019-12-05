@@ -1,8 +1,12 @@
 ---
 - include_tasks: set_appropriate_cmd_path.yml
   when: cmd_path is not defined
-
+  tags:
+  - test
+  
 - include_tasks: requirements.yml
+  tags:
+  - test
 
 - name: Creates Outputs directory
   file:
@@ -11,13 +15,19 @@
     force: true
   when:
   - action == "deploy"
+  tags:
+  - test
 
 - name: Tmp directory for execution
   set_fact:
     tmp_dir: "{{role_path}}/.generated"
+  tags:
+  - test
 
 # Download istio release
 - include_tasks: get_release.yml
+  tags:
+  - test
 
 # CREATE NS
 - include_tasks: safely_create_namespace.yml
@@ -45,6 +55,13 @@
 - include_tasks: deploy_policies.yml
   when:
   - action == "deploy"
+  
+# Deploy ClusterLocal Gateway
+- include_tasks: deploy_istio_cluster_local_gw.yml
+  # when:
+  # - action == "deploy"
+  tags:
+  - test
 
 # DEPLOY GATEWAYS
 - include_tasks: deploy_gateways.yml

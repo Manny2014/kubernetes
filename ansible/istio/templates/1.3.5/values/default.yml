@@ -1,0 +1,146 @@
+gateways:
+  enabled: true
+  istio-ingressgateway:
+    serviceAnnotations:
+      service.beta.kubernetes.io/aws-load-balancer-type: alb
+      domainName: "kubernetes.manny87.com" # TODO: NOT SURE IF IT WILL WORK
+      # service.beta.kubernetes.io/aws-load-balancer-internal: 0.0.0.0/0
+    secretVolumes:
+    - name: ingressgateway-certs
+      secretName: istio-ingressgateway-certs
+      mountPath: /etc/istio/ingressgateway-certs
+    - name: ingressgateway-ca-certs
+      secretName: istio-ingressgateway-ca-certs
+      mountPath: /etc/istio/ingressgateway-ca-certs
+    - name: kiali-ingressgateway-ca-certs
+      secretName: kiali-ingressgateway-certs
+      mountPath: /etc/istio/kiali-ingressgateway-certs
+    - name: prometheus-ingressgateway-ca-certs
+      secretName: prometheus-ingressgateway-certs
+      mountPath: /etc/istio/prometheus-ingressgateway-certs
+    - name: grafana-ingressgateway-ca-certs
+      secretName: grafana-ingressgateway-certs
+      mountPath: /etc/istio/grafana-ingressgateway-certs
+    - name: jaeger-ingressgateway-ca-certs
+      secretName: jaeger-ingressgateway-certs
+      mountPath: /etc/istio/jaeger-ingressgateway-certs
+#
+# sidecar-injector webhook configuration, refer to the
+# charts/sidecarInjectorWebhook/values.yaml for detailed configuration
+#
+sidecarInjectorWebhook:
+  enabled: true
+  enableNamespaceByDefault: true
+
+#
+# galley configuration, refer to charts/galley/values.yaml
+# for detailed configuration
+#
+galley:
+  enabled: true
+
+#
+# mixer configuration
+#
+# @see charts/mixer/values.yaml, it takes precedence
+mixer:
+  policy:
+    # if policy is enabled the global.disablePolicyChecks has affect.
+    enabled: true
+
+  telemetry:
+    enabled: true
+#
+# pilot configuration
+#
+# @see charts/pilot/values.yaml
+pilot:
+  enabled: true
+
+#
+# security configuration
+#
+security:
+  enabled: true
+
+#
+# addon grafana configuration
+#
+grafana:
+  enabled: true
+
+#
+# addon prometheus configuration
+#
+prometheus:
+  enabled: true
+
+#
+# addon jaeger tracing configuration
+#
+tracing:
+  enabled: true
+
+#
+# addon kiali tracing configuration
+#
+kiali:
+  enabled: true
+  createDemoSecret: true
+
+# Common settings used among istio subcharts.
+global:
+
+  k8sIngress:
+    enabled: false
+    # Gateway used for k8s Ingress resources. By default it is
+    # using 'istio:ingressgateway' that will be installed by setting
+    # 'gateways.enabled' and 'gateways.istio-ingressgateway.enabled'
+    # flags to true.
+    gatewayName: ingressgateway
+    # enableHttps will add port 443 on the ingress.
+    # It REQUIRES that the certificates are installed  in the
+    # expected secrets - enabling this option without certificates
+    # will result in LDS rejection and the ingress will not work.
+    enableHttps: false
+
+
+  # imagePullPolicy is applied to istio control plane components.
+  # local tests require IfNotPresent, to avoid uploading to dockerhub.
+  # TODO: Switch to Always as default, and override in the local tests.
+  imagePullPolicy: IfNotPresent
+
+  # controlPlaneSecurityEnabled enabled. Will result in delays starting the pods while secrets are
+  # propagated, not recommended for tests.
+  controlPlaneSecurityEnabled: false
+
+  # disablePolicyChecks disables mixer policy checks.
+  # if mixer.policy.enabled==true then disablePolicyChecks has affect.
+  # Will set the value with same name in istio config map - pilot needs to be restarted to take effect.
+  disablePolicyChecks: true
+
+  # policyCheckFailOpen allows traffic in cases when the mixer policy service cannot be reached.
+  # Default is false which means the traffic is denied when the client is unable to connect to Mixer.
+  policyCheckFailOpen: false
+
+  # EnableTracing sets the value with same name in istio config map, requires pilot restart to take effect.
+  enableTracing: true
+
+  # Default mtls policy. If true, mtls between services will be enabled by default.
+  mtls:
+    # Default setting for service-to-service mtls. Can be set explicitly using
+    # destination rules or service annotations.
+    enabled: true
+
+  # Whether to restrict the applications namespace the controller manages;
+  # If not set, controller watches all namespaces
+  oneNamespace: false
+
+  # The trust domain corresponds to the trust root of a system
+  # Refer to https://github.com/spiffe/spiffe/blob/master/standards/SPIFFE-ID.md#21-trust-domain
+  # Indicate the domain used in SPIFFE identity URL
+  # The default depends on the environment.
+  #   kubernetes: cluster.local
+  #   else:  default dns domain
+  trustDomain: ""
+

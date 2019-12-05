@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: knative-consumer
+  namespace: knative-samples
+spec:
+  replicas: 1
+  selector:
+    matchLabels: &labels
+      app: knative-consumer
+  template:
+    metadata:
+      labels: *labels
+    spec:
+      containers:
+        - name: knative-consumer
+          image: docker.io/manny87/knative-consumer-producer:1.10
+          command: ["/app/app"]
+          args: ["-mode=consumer"]
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: knative-consumer
+  namespace: knative-samples
+spec:
+  selector:
+    app: knative-consumer
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080

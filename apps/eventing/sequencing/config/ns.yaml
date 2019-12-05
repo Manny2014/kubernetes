@@ -1,0 +1,29 @@
+# Namespace for sample application with eventing enabled
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: knative-samples
+  labels:
+    knative-eventing-injection: enabled
+    istio-injection: enabled
+---
+apiVersion: "networking.istio.io/v1alpha3"
+kind: "DestinationRule"
+metadata:
+  name: "default"
+  namespace: knative-samples
+spec:
+  host: "*.knative-samples.svc.cluster.local"
+  trafficPolicy:
+    tls:
+      mode: DISABLE
+---
+apiVersion: "authentication.istio.io/v1alpha1"
+kind: "Policy"
+metadata:
+  name: "default"
+  namespace: "knative-samples"
+spec:
+  peers:
+    - mtls:
+        mode: PERMISSIVE
