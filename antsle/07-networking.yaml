@@ -1,0 +1,11 @@
+- hosts: localhost
+  vars_files:
+    - vars.yaml
+  tasks:
+
+  - name: Deploy Flannel
+    command: "kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml --kubeconfig {{ conf_dir }}/admin/admin.kubeconfig"
+
+
+  - name: Deploy CoreDNS
+    command: "kubectl apply -f {{ playbook_dir }}/files/coredns/coredns.yaml --kubeconfig {{ conf_dir }}/admin/admin.kubeconfig"

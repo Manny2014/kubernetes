@@ -1,0 +1,250 @@
+
+# containerd: ExecStartPre=/sbin/modprobe overlay | br_netfilter
+#   --runtime-cgroups=/systemd/system.slice \ --kubelet-cgroups=/systemd/system.slice \
+# --fail-swap-on=false \
+# --cgroups-per-qos=false --enforce-node-allocatable=\
+# Flannel: k apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+# kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')&disable-npc=true&IPALLOC_RANGE=10.200.0.0/16"
+# kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')&disable-npc=true"
+#   --cgroup-driver=systemd \
+# --runtime-cgroups=/lib/systemd/system/kubelet.service \
+# --kubelet-cgroups=/lib/systemd/system/kubelet.service \
+# kubectl logs -l k8s-app=kube-dns -n kube-system
+
+- hosts: localhost
+  vars_files:
+    - vars.yaml
+  tasks:
+  - name: Creates Bootstrap dir
+    file:
+      path: "{{ bootstrap_tls_dir }}"
+      state: directory
+
+  - name: Generate Bootstrap Config
+    template:
+      src: "{{ playbook_dir }}/templates/bootstrap/{{ item }}.j2"
+      dest: "{{ bootstrap_tls_dir }}/{{ item }}"
+    loop:
+    - bootstrap-token.yaml
+
+  - name: Create Kubelet Bootstrap TLS Token
+    command: "kubectl apply -f {{ bootstrap_tls_dir }}/bootstrap-token.yaml --kubeconfig {{ conf_dir }}/admin/admin.kubeconfig"
+
+- hosts: k8s1-worker
+  vars_files:
+    - vars.yaml
+  tasks:
+  - name: Install yum packages
+    yum:
+      name:
+      - socat # REQUIRED FOR KUBECTL PORT-FORWARD
+      - conntrack
+      - ipset
+      - libseccomp # REQUIRED FOR CONTAINERD
+      - cronie # REQUIRED FOR DISK MOUNT
+      - e2fsprogs # REQUIRED FOR DISK MOUNT
+      # - btrfs-progs-devel # REQUIRED?
+      # - libcgroup # REQUIRED?
+      # - libcgroup-tools # REQUIRED?
+      state: present
+  
+  - name: Download required worker components
+    shell: |
+      cd /tmp
+      if [ -f {{ item.output }} ]; then
+          echo "{{ item.output }} exists..."
+      else
+          wget "{{ item.url }}/{{ item.output }}"
+      fi
+    with_items:
+    - { output: "crictl-{{ crictl_version }}-linux-amd64.tar.gz", url: "https://github.com/kubernetes-sigs/cri-tools/releases/download/{{ crictl_version }}" }
+    - { output: "runc.amd64", url: "https://github.com/opencontainers/runc/releases/download/{{ runc_version }}" }
+    - { output: "cni-plugins-linux-amd64-{{ cni_plugins_version }}.tgz", url: "https://github.com/containernetworking/plugins/releases/download/{{ cni_plugins_version }}" }
+    - { output: "containerd-{{ containerd_version }}.linux-amd64.tar.gz", url: "https://github.com/containerd/containerd/releases/download/v{{ containerd_version }}" }
+    - { output: "kubectl", url: "https://storage.googleapis.com/kubernetes-release/release/{{kubernetes_version}}/bin/linux/amd64" }
+    - { output: "kube-proxy", url: "https://storage.googleapis.com/kubernetes-release/release/{{kubernetes_version}}/bin/linux/amd64" }
+    - { output: "kubelet", url: "https://storage.googleapis.com/kubernetes-release/release/{{kubernetes_version}}/bin/linux/amd64" }
+  
+  - name: Creates Required dirs
+    file:
+      path: "{{ item }}"
+      state: directory
+      mode: u=rwX,g=rX,o=rX
+      group: root
+      owner: root
+      recurse: yes
+    loop:
+    - "{{ cni_conf_dir }}"
+    - "{{ cni_bin_dir }}"
+    # - "{{ kubelet_dir }}"
+    - "{{ kube_proxy_dir }}"
+    - "{{ kubernetes_conf_dir }}"
+    - "/var/run/kubernetes"
+    - "/etc/containerd"
+    - "/run/systemd/resolve"
+
+  - name: Copy Containerd binaries
+    shell: |
+      cd /tmp
+      if [ -f "/bin/containerd" ]; then
+        echo "containerd already installed"
+      else
+        mkdir containerd
+        tar -xvf containerd-{{ containerd_version }}.linux-amd64.tar.gz -C containerd
+        mv containerd/bin/* /bin/
+      fi
+  
+  - name: Copy Kubectl Kube-proxy Kubelet binaries
+    shell: |
+      cd /tmp
+
+      for KUBEITEM in kubectl kube-proxy kubelet
+      do
+          if [ -f "/usr/local/bin/${KUBEITEM}" ]; then
+            echo "${KUBEITEM} already installed"
+          else
+            chmod +x ${KUBEITEM}
+            mv ${KUBEITEM} /usr/local/bin/
+          fi
+      done
+
+  - name: Copy Runc binaries
+    shell: |
+      cd /tmp
+
+      if [ -f "/usr/local/bin/runc" ]; then
+        echo "runc.amd64 already installed"
+      else
+        mv runc.amd64 runc
+        chmod +x  runc 
+        mv runc /usr/local/bin/
+      fi
+      
+  - name: Copy CNI binaries
+    shell: |
+      cd /tmp
+
+      if [ -f "{{ cni_bin_dir }}/ipvlan" ]; then
+        echo "cni plugins already installed"
+      else
+        tar -xvf cni-plugins-linux-amd64-{{ cni_plugins_version }}.tgz -C {{ cni_bin_dir }}/
+      fi
+
+  - name: Copy CRICTL binaries
+    shell: |
+      cd /tmp
+      if [ -f "/usr/local/bin/crictl" ]; then
+        echo "crictl already installed"
+      else
+        tar -xvf crictl-{{ crictl_version }}-linux-amd64.tar.gz
+        chmod +x crictl 
+        mv crictl /usr/local/bin/
+      fi
+  
+  - name: Touch resolv.conf
+    file:
+      path: /run/systemd/resolve/resolv.conf
+      state: touch
+      mode: 0777
+
+  # - name: Push CNI Configs
+  #   template:
+  #     src: "{{ playbook_dir }}/templates/cni/{{ item }}.j2"
+  #     dest: "{{ cni_conf_dir }}/{{ item }}"
+  #   loop:
+  #   # - 10-bridge.conf
+  #   - loopback.conf
+
+  - name: Push Containerd Config
+    template:
+      src: "{{ playbook_dir }}/templates/containerd/{{ item }}.j2"
+      dest: "/etc/containerd/{{ item }}"
+    loop:
+    - config.toml
+
+  - name: Push Containerd Service Configs
+    template:
+      src: "{{ playbook_dir }}/templates/containerd/{{ item }}.j2"
+      dest: "/etc/systemd/system/{{ item }}"
+    loop:
+    - containerd.service
+
+  - name: Copy Kube-proxy Conf
+    copy:
+      src: "{{ conf_dir }}/kube-proxy/kube-proxy.kubeconfig"
+      dest: "{{ kube_proxy_dir }}/kubeconfig"
+      mode: u=rwX,g=rX,o=rX
+      group: root
+      owner: root
+  
+  - name: Push Kube-proxy Service Config
+    template:
+      src: "{{ playbook_dir }}/templates/kube-proxy/{{ item }}.j2"
+      dest: "/etc/systemd/system/{{ item }}"
+    loop:
+    - kube-proxy.service
+
+  - name: Push Kube-proxy YAML Config
+    template:
+      src: "{{ playbook_dir }}/templates/kube-proxy/{{ item }}.j2"
+      dest: "{{ kube_proxy_dir }}/{{ item }}"
+    loop:
+    - kube-proxy-config.yaml
+
+  - name: Push Kubelet Service Config
+    template:
+      src: "{{ playbook_dir }}/templates/kubelet/{{ item }}.j2"
+      dest: "/etc/systemd/system/{{ item }}"
+    loop:
+    - kubelet.service
+  
+  - name: Push Kubelet Configs
+    template:
+      src: "{{ playbook_dir }}/templates/kubelet/{{ item }}.j2"
+      dest: "{{ kubelet_dir }}/{{ item }}"
+    loop:
+    - kubelet-config.yaml
+    - bootstrap-kubeconfig
+
+  - name: Copy Kubelet certs
+    copy:
+      src: "{{certs_dir}}/{{ inventory_hostname }}/"
+      dest: "{{ kubelet_dir }}/"
+      directory_mode: yes
+      mode: u=rwX,g=rX,o=rX
+      group: root
+      owner: root
+  
+  - name: Copy Kubelet conf
+    copy:
+      src: "{{ conf_dir }}/{{ inventory_hostname }}/{{ inventory_hostname }}.kubeconfig"
+      dest: "{{ kubelet_dir }}/kubeconfig"
+      directory_mode: yes
+      mode: u=rwX,g=rX,o=rX
+      group: root
+      owner: root
+
+  - name: Start/Enable Data Plane component services
+    systemd:
+      state: started
+      daemon_reload: yes
+      name: "{{ item }}"
+      enabled: yes
+    loop:
+    - containerd
+    - kubelet
+    - kube-proxy
+
+  - name: Restart Services
+    systemd:
+      state: restarted
+      daemon_reload: yes
+      name: "{{item}}"
+    loop:
+    - containerd
+    - kubelet
+    - kube-proxy
+
+
+
+  # kubectl apply -f "https://cloud.weave.works/k8s/scope.yaml?k8s-version=$(kubectl version | base64 | tr -d '\n')"

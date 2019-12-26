@@ -1,0 +1,28 @@
+- name: install dependent packages
+  yum:
+    name: "{{ item }}"
+    state: present
+  loop:
+  - yum-utils
+  - epel-release
+  - firewalld
+  - policycoreutils-python
+
+- name: Make cache
+  command: yum makecahe
+  
+- name: install nginx package
+  yum:
+    name: nginx
+    state: present
+
+- name: Start/Enable Nginx
+  systemd:
+    state: started
+    daemon_reload: yes
+    name: nginx
+    enabled: yes
+
+# vi /etc/nginx/conf.d/app.conf
+# semanage port -a -t http_port_t -p tcp 6443
+# iptables -A IN_public_allow -p tcp -m tcp --dport 8001 -m conntrack --ctstate NEW,UNTRACKED -j ACCEPT

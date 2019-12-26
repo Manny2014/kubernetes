@@ -1,0 +1,16 @@
+- hosts: localhost
+  vars_files:
+    - vars.yaml
+  tasks:
+  - include_tasks: "{{playbook_dir}}/tasks/component-certificate.yaml"
+    with_items:
+    - { component: "manny", profile: "kubernetes", cn_name: "manny", o_name: "system:masters", ou_name: "Antsle"}
+
+  - name: Generate Proxy configs
+    shell: |
+      kubectl config set-cluster {{ cluster_name }} --certificate-authority={{ certs_dir }}/ca/ca.pem --embed-certs=true --server={{ item.master_url }} --kubeconfig={{ conf_dir }}/{{ item.component }}/{{ item.component }}.kubeconfig
+      kubectl config set-credentials {{ item.user }} --client-certificate={{ certs_dir }}/{{ item.component }}/{{ item.component }}.pem --client-key={{certs_dir}}/{{ item.component }}/{{ item.component }}-key.pem --embed-certs=true --kubeconfig={{ conf_dir }}/{{ item.component }}/{{ item.component }}.kubeconfig
+      kubectl config set-context default --cluster={{ cluster_name }} --user={{ item.user }} --kubeconfig={{ conf_dir }}/{{ item.component }}/{{ item.component }}.kubeconfig
+      kubectl config use-context default --kubeconfig={{ conf_dir }}/{{ item.component }}/{{ item.component }}.kubeconfig
+    with_items:
+    - { component: "manny", user: "manny", master_url: "{{ master_url }}"}

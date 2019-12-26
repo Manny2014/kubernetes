@@ -1,0 +1,12 @@
+[Unit]
+Description=envoy
+Documentation=https://github.com/envoy
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/envoy -c /var/lib/envoy/envoy.yaml
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

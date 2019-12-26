@@ -1,0 +1,70 @@
+- hosts: k8s1-master
+  vars_files:
+    - vars.yaml
+  tasks:
+  - name: Copy Control Plane Certs
+    copy:
+      src: "{{ certs_dir }}/{{ item }}/"
+      dest: "{{ kubernetes_conf_dir }}/"
+      directory_mode: yes
+      mode: u=rwX,g=rX,o=rX
+      group: root
+      owner: root
+    loop:
+     - admin
+     - service-accounts
+     - kube-controller-manager
+     - kube-proxy
+     - kube-scheduler
+     - kube-apiserver
+     - ca
+
+  - name: Copy Conrol-plane KubeConfigs
+    copy:
+      src: "{{conf_dir}}/{{ item }}/"
+      dest: "{{ kubernetes_conf_dir }}/"
+      directory_mode: yes
+      mode: '0777'
+      group: root
+      owner: root
+    loop:
+     - admin
+     - kube-controller-manager
+     - kube-proxy
+     - kube-scheduler
+
+  - name: Copy kube-scheduler.yaml
+    template:
+      src: "{{ playbook_dir }}/templates/kube-scheduler/kube-scheduler.yaml.j2"
+      dest: "{{ kubernetes_conf_dir }}/kube-scheduler.yaml"
+  
+  - name: Push encryption config
+    template:
+      src: "{{ playbook_dir }}/templates/encryption/encryption-config.yaml.j2"
+      dest: "{{ kubernetes_conf_dir }}/encryption-config.yaml"
+
+- hosts: k8s1-worker
+  vars_files:
+    - vars.yaml
+  tasks:  
+  - name: Copy Data Plane Certs
+    copy:
+      src: "{{ certs_dir }}/{{ item }}/"
+      dest: "{{ kubernetes_conf_dir }}/"
+      directory_mode: yes
+      mode: u=rwX,g=rX,o=rX
+      group: root
+      owner: root
+    loop:
+     - admin
+     - ca
+     - kube-proxy
+     - "{{ inventory_hostname }}"
+
+  - name: Copy Data Plane Configs
+    copy:
+      src: "{{conf_dir}}/{{ inventory_hostname }}/"
+      dest: "{{ kubernetes_conf_dir }}/"
+      directory_mode: yes
+  
+  - include_tasks: "{{ playbook_dir }}/tasks/kubelet_disk_mount.yaml"

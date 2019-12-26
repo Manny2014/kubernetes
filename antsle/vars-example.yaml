@@ -1,0 +1,84 @@
+# ANTLET MAC's
+antlet_nic_macs:
+  k8s1-master-0: 
+    mac: 52:54:00:e3:7c:61
+    source: "br0"
+  k8s1-master-1: 
+    mac: 52:54:00:a6:38:43
+    source: "br0"
+  k8s1-master-2: 
+    mac: 52:54:00:6c:8e:34
+    source: "br0"
+  k8s1-worker-0: 
+    mac: 52:54:00:f9:bb:7e
+    source: "br1"
+  k8s1-worker-1: 
+    mac: 52:54:00:cc:fd:c1
+    source: "br1"
+  k8s1-worker-2: 
+    mac: 52:54:00:1b:89:94
+    source: "br1"
+  k8s1-proxy: 
+    mac: 52:54:00:bb:57:f5
+    source: "br0"
+
+# SERVER AUTH
+antsle_api_url: "http://192.168.1.122:3000/api"
+antsle_token: "<ANTSLE_TOKEN>"
+ansible_password: "antsle"
+ansible_user: "root"
+manny_pass: "<ENCRYPTED_PASS>"
+
+# CERT STUFF
+k8s_dns_names: kubernetes,kubernetes.default,kubernetes.default.svc,kubernetes.default.svc.cluster,kubernetes.svc.cluster.local
+
+# DIRECTORIES
+## CONTROL PLANE
+kubernetes_conf_dir: /var/lib/kubernetes
+
+## PROXY
+envoy_conf_dir: "{{ playbook_dir }}/files/envoy/dynamic"
+remote_envoy_conf_dir: "/var/lib/envoy/conf"
+remote_envoy_certs_dir: "/var/lib/envoy/certs"
+
+## CA/Certs
+ca_config: "{{ playbook_dir }}/files/ca-config.json"
+certs_dir: "{{ playbook_dir }}/.generated/certs"
+conf_dir: "{{ playbook_dir }}/.generated/conf"
+bootstrap_tls_dir: "{{ playbook_dir }}/.generated/bootstrap"
+
+# COMPONENT VERSIONS
+kubernetes_version: "v1.15.7"
+ectd_version: v3.3.18
+cluster_name: kubernetes # THE API server is automatically assigned this name
+
+# CLUSTER VARS
+master_url: https://10.10.1.30:6443 # TODO: Should be some LB or somethang....
+service_ip_cidr: 10.32.0.0/24 # Changec from /16
+pod_ip_cidr: 10.200.0.0/16  # Pod network range TODO: Change name to pod_ip_cidr (cluster_cidr)
+
+# API SERVICE VARS
+apiserver_port_range: 30000-32767 # NodePort range
+apiserver_enabled_adminision_plugins: NamespaceLifecycle,NodeRestriction,ServiceAccount,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,DefaultStorageClass
+apiserver_authorization: Node,RBAC
+
+# ENCRYPTION
+encryption_config_key: 0iTw9kKrEAjxHyg32Gi1KREGQBZ2plvphLbaJURoT7g=
+
+# WORKER NODES
+runc_version: v1.0.0-rc9
+cni_plugins_version: v0.8.3
+crictl_version: v1.15.0
+containerd_version: 1.3.2
+node_bootstrap_token_Id: 07401b
+node_bootstrap_token: f395accd246ae52d
+cni_conf_dir: /etc/cni/net.d
+cni_bin_dir: /opt/cni/bin
+kubelet_dir: /var/lib/kubelet
+kube_proxy_dir: /var/lib/kube-proxy
+
+# HOST NETWORK
+local_host_network_cidr: 10.10.1.0/24
+
+# DEBUG MODE
+debug_level: 2

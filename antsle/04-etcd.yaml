@@ -1,0 +1,65 @@
+- hosts: k8s1-master
+  vars_files:
+    - vars.yaml
+  tasks:
+  - name: Set Etcd Node Config Fact
+    set_fact: etcd_nodes={%for host in groups['k8s1-master']%}{{hostvars[host].ansible_eth0.ipv4.address}}=https://{{hostvars[host].ansible_eth0.ipv4.address}}:2380{% if not loop.last %},{% endif %}{% endfor %}
+  
+  - name: Download Ectd binaries
+    shell: |
+      cd /tmp
+      if [ -f "/usr/local/bin/etcd" ]; then
+          echo "etcd already installed"
+      else
+          wget "https://github.com/etcd-io/etcd/releases/download/{{ectd_version}}/etcd-{{ectd_version}}-linux-amd64.tar.gz"
+          tar -xvf etcd-{{ectd_version}}-linux-amd64.tar.gz
+          mv etcd-{{ectd_version}}-linux-amd64/etcd* /usr/local/bin/
+      fi
+  
+  - name: Creates Etcd directories
+    file:
+      path: "{{item}}"
+      state: directory
+    loop:
+    - "/etc/etcd"
+    - "/var/lib/etcd"
+
+  - name: Copy Certs
+    command: "cp {{ kubernetes_conf_dir }}/{{ item }} /etc/etcd/"
+    loop:
+     - ca.pem
+     - kube-apiserver.pem
+     - kube-apiserver-key.pem
+
+  - name: Etcd Service Conf
+    template:
+      src: "{{ playbook_dir }}/templates/etcd/etcd.service.j2"
+      dest: /etc/systemd/system/etcd.service
+  
+  - name: Check Etcd Script
+    template:
+      src: "{{ playbook_dir }}/templates/etcd/check-etcd.sh"
+      dest: /usr/local/bin/check-etcd
+  
+  - name: Set check-etcd executable
+    command: "chmod +x /usr/local/bin/check-etcd"
+
+  - name: Start/Enable etcd service
+    systemd:
+      state: started
+      daemon_reload: yes
+      name: etcd
+      enabled: yes
+
+  - name: Restart etcd
+    systemd:
+      state: restarted
+      daemon_reload: yes
+      name: etcd
+
+  - name: Set check-etcd executable
+    command: "check-etcd"
+    register: etcd_check
+  
+  - debug: 
+      msg: "{{etcd_check}}"

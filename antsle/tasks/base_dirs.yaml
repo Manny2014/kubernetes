@@ -1,0 +1,11 @@
+- name: Creates Certs dir
+  file:
+    path: "{{ certs_dir }}"
+    state: directory
+    recurse: true
+
+- name: Creates Conf dir
+  file:
+    path: "{{ conf_dir }}"
+    state: directory
+    recurse: true

@@ -1,0 +1,13 @@
+  - name: Stop Antlet
+    uri:
+      url: "{{ antsle_api_url }}/antlets/{{ antlet_name }}/stop"
+      method: POST
+      body_format: json
+      status_code: 200
+      headers:
+        Content-Type: application/json
+        Authorization: "Token {{ antsle_token }}" 
+    register: antlet_start
+
+  - debug:
+      msg: "{{antlet_start.json}}"

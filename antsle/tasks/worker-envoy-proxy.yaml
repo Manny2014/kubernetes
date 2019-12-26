@@ -1,0 +1,109 @@
+- name: Install yum packages
+  yum:
+    name:
+    - yum-utils
+    - epel-release
+    - firewalld
+    - policycoreutils-python
+    - libselinux-python
+    - wget
+    state: present
+
+- name: Add Envoy repository
+  yum_repository:
+    name: tetrate-getenvoy-stable
+    description: Envoy YUM repo
+    baseurl: https://tetrate.bintray.com/getenvoy-rpm/centos/$releasever/$basearch/stable/
+    gpgcheck: yes
+    gpgkey: https://getenvoy.io/gpg
+    repo_gpgcheck: yes
+    enabled: yes
+
+- name: install Envoy yum package
+  yum:
+    name:
+    - getenvoy-envoy
+    state: present
+
+- name: Create Envoy Working Dir
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: u=rwX,g=rX,o=rX
+    group: root
+    owner: root
+    recurse: yes
+  loop:
+  - "/var/lib/envoy"
+
+- name: Push Envoy Configs
+  template:
+    src: "{{ playbook_dir }}/templates/envoy/{{ item }}.j2"
+    dest: "/var/lib/envoy/{{ item }}"
+  loop:
+  - cds.conf
+  - lds.conf
+  - eds.conf
+  - envoy.yaml
+  - envoy.service
+
+- name: Push Kubelet EDS
+  template:
+    src: "{{ playbook_dir }}/templates/envoy/eds.conf.j2"
+    dest: "/var/lib/envoy/eds-kubelet.conf"
+  vars:
+    cluster_name: "kubelet"
+
+- name: Push Kube-proxy EDS
+  template:
+    src: "{{ playbook_dir }}/templates/envoy/eds.conf.j2"
+    dest: "/var/lib/envoy/eds-proxy.conf"
+  vars:
+    cluster_name: "proxy"
+
+- name: Push Envoy Configs
+  template:
+    src: "{{ playbook_dir }}/templates/envoy/{{ item }}.j2"
+    dest: "/var/lib/envoy/{{ item }}"
+  loop:
+  - eds.conf
+
+- name: Create a symbolic link
+  file:
+    src: "/var/lib/envoy/envoy.service"
+    dest: "/etc/systemd/system/envoy.service"
+    owner: root
+    group: root
+    state: link
+
+- name: Start/Enable Envoy Proxy
+  systemd:
+    state: started
+    daemon_reload: yes
+    name: envoy
+    enabled: yes
+
+- name: Enable firewalld
+  systemd:
+    name: firewalld
+    state: started
+    enabled: yes
+
+- name: Opem ports 6443,443,8001
+  firewalld:
+    port: "{{ item }}"
+    permanent: yes
+    state: enabled
+    immediate: yes
+  loop:
+  - 443/tcp
+  # - 6443/tcp
+  - 8001/tcp
+
+- name: Restart Services
+  systemd:
+    state: restarted
+    daemon_reload: yes
+    name: "{{item}}"
+  loop:
+  - envoy

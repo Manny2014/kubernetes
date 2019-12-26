@@ -1,0 +1,13 @@
+  - name: Wait "{{ state_name }}"
+    uri:
+      url: "{{ antsle_api_url }}/antlets/{{ antlet_to_wait_for }}"
+      method: GET
+      body_format: json
+      status_code: 200
+      headers:
+        Content-Type: application/json
+        Authorization: "Token {{ antsle_token }}" 
+    register: antlet
+    until: antlet.json.state == "{{state_name}}"
+    retries: 20
+    delay: 10

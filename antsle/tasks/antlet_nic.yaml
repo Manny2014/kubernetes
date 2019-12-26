@@ -1,0 +1,30 @@
+  - debug:
+      msg: "Attempting to add nic for - antlet: {{ antlet_name }}, mac: {{ mac }}, source: {{ source }}"
+
+  - name: Get Nic Antlets
+    uri:
+      url: "{{ antsle_api_url }}/antlets/{{ antlet_name }}/vnics/{{ mac }}"
+      method: GET
+      body_format: json
+      headers:
+        Content-Type: application/json
+        Authorization: "Token {{ antsle_token }}" 
+    register: get_antlet_nic_resp
+    ignore_errors: yes
+  
+  - name: Add Nic Antlets
+    uri:
+      url: "{{ antsle_api_url }}/antlets/{{ antlet_name }}/vnics"
+      method: POST
+      body_format: json
+      status_code: 201
+      body: '{"type":"{{ nic_type }}","source":"{{ source }}","mac-address": "{{ mac }}", "model": "{{ nic_model }}"}'
+      headers:
+        Content-Type: application/json
+        Authorization: "Token {{ antsle_token }}" 
+    register: antlet_nic_resp
+    when: "'errors' in get_antlet_nic_resp.json"
+
+  - debug:
+      msg: "{{ get_antlet_nic_resp }}"
+    when: "'errors' not in get_antlet_nic_resp.json"

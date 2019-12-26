@@ -1,0 +1,49 @@
+{
+  "version_info": "0",
+  "resources": [
+      {
+        "@type": "type.googleapis.com/envoy.api.v2.Cluster",
+        "name": "kubelet",
+        "connect_timeout": "0.25s",
+        "lb_policy": "ROUND_ROBIN",
+        "type": "EDS",
+        "tls_context":{
+            "common_tls_context": {
+                "tls_certificate_sds_secret_configs": [
+                    {
+                        "name": "kubelet"
+                    }
+                ]
+            }
+        },
+        "eds_cluster_config": {
+            "service_name": "kubelet",
+            "eds_config": {
+                "path": "/var/lib/envoy/eds-kubelet.conf"
+            }
+        }
+     },
+      {
+        "@type": "type.googleapis.com/envoy.api.v2.Cluster",
+        "name": "proxy",
+        "connect_timeout": "0.25s",
+        "lb_policy": "ROUND_ROBIN",
+        "type": "EDS",
+        "tls_context":{
+            "common_tls_context": {
+                "tls_certificate_sds_secret_configs": [
+                    {
+                        "name": "proxy"
+                    }
+                ]
+            }
+        },
+        "eds_cluster_config": {
+            "service_name": "proxy",
+            "eds_config": {
+                "path": "/var/lib/envoy/eds-proxy.conf"
+            }
+        }
+     }
+  ]
+}

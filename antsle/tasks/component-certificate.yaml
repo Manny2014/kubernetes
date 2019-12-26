@@ -1,0 +1,35 @@
+  # REQUIRES
+  # cn_name, o_name, ou_name, is_ca
+  
+- name: Set Certificates vars
+  set_fact:
+    component: "{{item.component}}"
+    output_path: "{{certs_dir}}/{{item.component}}"
+    cn_name: "{{item.cn_name}}"
+    o_name: "{{item.o_name}}"
+    ou_name: "{{item.ou_name}}"
+    ca_pem: "{{ certs_dir }}/ca/ca.pem"
+    ca_key: "{{ certs_dir }}/ca/ca-key.pem"
+    profile: "{{ item.profile }}"
+
+- name: Creates {{output_path}} dir
+  file:
+    path: "{{ output_path }}"
+    state: directory
+
+- name: Generate json csr {{ cn_name }}
+  template:
+    src: "{{ playbook_dir }}/templates/pki/csr-template.json.j2"
+    dest: "{{output_path }}/csr.json"
+
+- name: Generate Component Certfiles
+  shell: |
+    if [ -f "{{ output_path }}/{{ component }}.pem" ]; then
+      echo "{{ output_path }}/{{ component }}.pem already present"
+    else
+      cfssl gencert -ca={{ca_pem}} -ca-key={{ca_key}} -config={{ca_config}} -profile={{ profile }} {{ output_path }}/csr.json | cfssljson -bare {{ output_path }}/{{ component }}
+    fi
+  register: comp_cert
+  
+- debug:
+    msg: "{{ comp_cert }}"

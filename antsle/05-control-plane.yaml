@@ -1,0 +1,85 @@
+- hosts: k8s1-master
+  vars_files:
+    - vars.yaml
+  tasks:
+  - name: Set Etcd Node Config Fact
+    set_fact: etcd_nodes={%for host in groups['k8s1-master']%}https://{{hostvars[host].ansible_eth0.ipv4.address}}:2379{% if not loop.last %},{% endif %}{% endfor %}
+  
+  - name: Creates Kubernetes directories
+    file:
+      path: "{{ item }}"
+      state: directory
+    loop:
+    - "/etc/kubernetes"
+    - "/etc/kubernetes/config" # TODO: Required?
+  
+  - name: Download Kubernetes binaries
+    shell: |
+      FILE=/usr/local/bin/{{ item }}
+      if [ -f "$FILE" ]; then
+          echo "$FILE exists"
+      else
+          cd /tmp
+          wget "https://storage.googleapis.com/kubernetes-release/release/{{kubernetes_version}}/bin/linux/amd64/{{ item }}"    
+          mv {{ item }} /usr/local/bin/
+      fi
+    loop:
+    - "kube-apiserver"
+    - "kubectl"
+    - "kube-scheduler"
+    - "kube-controller-manager"
+
+  - name: Allow execution of binaries
+    file:
+      path: "/usr/local/bin/{{item}}"
+      mode: 01777
+      force: yes
+    loop:
+    - "kube-apiserver"
+    - "kubectl"
+    - "kube-scheduler"
+    - "kube-controller-manager"
+
+  - name: Push Control Plane Service Configs
+    template:
+      src: "{{ playbook_dir }}/templates/{{ item }}/{{item}}.service.j2"
+      dest: /etc/systemd/system/{{item}}.service
+    loop:
+    - kube-apiserver
+    - kube-controller-manager
+    - kube-scheduler
+  
+  - name: Start/Enable Control Plane component services
+    systemd:
+      state: started
+      daemon_reload: yes
+      name: "{{ item }}"
+      enabled: yes
+    loop:
+    - kube-apiserver
+    - kube-controller-manager
+    - kube-scheduler
+  
+  - name: Restart Services
+    systemd:
+      state: restarted
+      daemon_reload: yes
+      name: "{{item}}"
+    loop:
+    - kube-apiserver
+    - kube-controller-manager
+    - kube-scheduler
+
+- hosts: localhost
+  vars_files:
+    - vars.yaml
+  tasks:
+  - name: Apply kubelet permissions
+    command: "kubectl apply -f {{ playbook_dir }}/files/kubelet/kubelet-rbac.yaml --kubeconfig {{ conf_dir }}/admin/admin.kubeconfig"
+
+  - name: Check components 
+    command: "kubectl get cs --kubeconfig {{ conf_dir }}/admin/admin.kubeconfig"
+    register: comp_check
+  
+  - debug: 
+      msg: "{{ comp_check }}"

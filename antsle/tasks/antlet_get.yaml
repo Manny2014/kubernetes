@@ -1,0 +1,14 @@
+  - name: Get Antlets
+    uri:
+      url: "{{ antsle_api_url }}/antlets"
+      method: GET
+      body_format: json
+      status_code: 200
+      headers:
+        Content-Type: application/json
+        Authorization: "Token {{ antsle_token }}" 
+    register: antlets
+
+  - name: Set Registered Antlets Fact
+    set_fact:
+      registered_antlets: "{{ antlets.json }}"
