@@ -143,17 +143,9 @@
   
   - name: Touch resolv.conf
     file:
-      path: /run/systemd/resolve/resolv.conf
+      path: /etc/kube-resolv.conf
       state: touch
-      mode: 0777
-
-  # - name: Push CNI Configs
-  #   template:
-  #     src: "{{ playbook_dir }}/templates/cni/{{ item }}.j2"
-  #     dest: "{{ cni_conf_dir }}/{{ item }}"
-  #   loop:
-  #   # - 10-bridge.conf
-  #   - loopback.conf
+      mode: '0777'
 
   - name: Push Containerd Config
     template:
@@ -244,7 +236,3 @@
     - containerd
     - kubelet
     - kube-proxy
-
-
-
-  # kubectl apply -f "https://cloud.weave.works/k8s/scope.yaml?k8s-version=$(kubectl version | base64 | tr -d '\n')"

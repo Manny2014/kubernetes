@@ -30,11 +30,13 @@
      - ca.pem
      - kube-apiserver.pem
      - kube-apiserver-key.pem
+    register: certs_output
 
   - name: Etcd Service Conf
     template:
       src: "{{ playbook_dir }}/templates/etcd/etcd.service.j2"
       dest: /etc/systemd/system/etcd.service
+    register: etcd_service_conf_output
   
   - name: Check Etcd Script
     template:
@@ -56,6 +58,7 @@
       state: restarted
       daemon_reload: yes
       name: etcd
+    when: (etcd_service_conf_output.changed) or (certs_output.changed)
 
   - name: Set check-etcd executable
     command: "check-etcd"

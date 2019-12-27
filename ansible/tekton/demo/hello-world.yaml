@@ -17,10 +17,10 @@ spec:
       args:
         - "hello world 2"
 ---
-apiVersion: tekton.dev/v1alpha1
-kind: TaskRun
-metadata:
-  name: echo-hello-world-task-run
-spec:
-  taskRef:
-    name: echo-hello-world-two
+# apiVersion: tekton.dev/v1alpha1
+# kind: TaskRun
+# metadata:
+#   name: echo-hello-world-task-run
+# spec:
+#   taskRef:
+#     name: echo-hello-world-two

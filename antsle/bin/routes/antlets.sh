@@ -13,3 +13,9 @@ ip route add 10.10.1.22/32 via 192.168.1.134
 
 # PROXY
 ip route add 10.10.1.30/32 via 192.168.1.128
+
+
+# API SERVER
+ip route add 10.244.0.0/24 via 10.10.1.20
+ip route add 10.244.1.0/24 via 10.10.1.21
+ip route add 10.244.2.0/24 via 10.10.1.22

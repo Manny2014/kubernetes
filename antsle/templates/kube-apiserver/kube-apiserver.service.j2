@@ -16,6 +16,7 @@ ExecStart=/usr/local/bin/kube-apiserver \
   --client-ca-file={{ kubernetes_conf_dir }}/ca.pem \
   --enable-admission-plugins={{ apiserver_enabled_adminision_plugins }} \
   --enable-bootstrap-token-auth=true \
+  --enable-aggregator-routing=true \
   --etcd-cafile={{ kubernetes_conf_dir }}/ca.pem \
   --etcd-certfile={{ kubernetes_conf_dir }}/kube-apiserver.pem \
   --etcd-keyfile={{ kubernetes_conf_dir }}/kube-apiserver-key.pem \

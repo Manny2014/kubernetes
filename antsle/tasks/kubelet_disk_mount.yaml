@@ -2,7 +2,7 @@
   filesystem:
     fstype: xfs
     dev: /dev/vdb
-    opts: ftype=1
+    opts: -n ftype=1
 
 - name: Mount and bind a volume
   mount:

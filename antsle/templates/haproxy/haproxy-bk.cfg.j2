@@ -1,11 +1,5 @@
 frontend kubernetes
-    bind *:6443
-    option tcplog
-    mode tcp
-    default_backend kubernetes-master-nodes
-
-frontend kubernetes-443
-    bind *:443
+    bind {{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}:6443
     option tcplog
     mode tcp
     default_backend kubernetes-master-nodes

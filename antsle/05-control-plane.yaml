@@ -2,6 +2,7 @@
   vars_files:
     - vars.yaml
   tasks:
+  
   - name: Set Etcd Node Config Fact
     set_fact: etcd_nodes={%for host in groups['k8s1-master']%}https://{{hostvars[host].ansible_eth0.ipv4.address}}:2379{% if not loop.last %},{% endif %}{% endfor %}
   
@@ -48,6 +49,7 @@
     - kube-apiserver
     - kube-controller-manager
     - kube-scheduler
+    register: service_confs
   
   - name: Start/Enable Control Plane component services
     systemd:
@@ -69,6 +71,23 @@
     - kube-apiserver
     - kube-controller-manager
     - kube-scheduler
+    when: service_confs.changed
+
+  # SET UP ROUTES TO POD NETWORK
+  # TODO: MAKE DYNAMIC
+  - name: Setup Pod CIDR Routes
+    template:
+      src: "{{ playbook_dir }}/templates/routes/{{item}}.j2"
+      dest: /etc/sysconfig/network-scripts/{{item}}
+    loop:
+    - route-eth0
+    register: pod_routes
+
+  - name: Restart service networkservice
+    service:
+      name: network
+      state: restarted
+    when: pod_routes.changed
 
 - hosts: localhost
   vars_files:
@@ -83,3 +102,4 @@
   
   - debug: 
       msg: "{{ comp_check }}"
+  

@@ -11,8 +11,8 @@ authorization:
   mode: Webhook
 clusterDomain: "cluster.local"
 clusterDNS:
-  - "10.32.0.10"
-# resolvConf: /run/systemd/resolve/resolv.conf
+  - "{{cluster_dns}}"
+resolvConf: /etc/kube-resolv.conf
 runtimeRequestTimeout: "15m"
 tlsCertFile: "{{ kubelet_dir }}/{{ inventory_hostname }}.pem"
 tlsPrivateKeyFile: "{{ kubelet_dir }}/{{ inventory_hostname }}-key.pem"

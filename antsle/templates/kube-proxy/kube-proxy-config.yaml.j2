@@ -2,5 +2,5 @@ kind: KubeProxyConfiguration
 apiVersion: kubeproxy.config.k8s.io/v1alpha1
 clientConnection:
   kubeconfig: "/var/lib/kube-proxy/kubeconfig"
-mode: "userspace" # iptables, userspace, ipvs (defaul: iptables)
+mode: "iptables" # iptables, userspace, ipvs (defaul: iptables)
 clusterCIDR: "{{ pod_ip_cidr }}" # "{{ local_host_network_cidr }}"  "{{ pod_ip_cidr }}"
