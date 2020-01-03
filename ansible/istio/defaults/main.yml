@@ -2,7 +2,6 @@
 
 # oc or k8s, oc
 cluster_flavour: k8s
-
 istio_version: 1.3.5
 
 kiali:

@@ -1,0 +1,32 @@
+# REQUIRES
+# Expect iteration of list
+
+- name: Set Certificates vars
+  set_fact:
+    ca_certs_dir: "{{ certifitaces_dir }}/ca"
+    ca_component_name: "ca"
+    cn_name: "{{item.cn_name}}"
+    o_name: "{{item.o_name}}"
+    ou_name: "{{item.ou_name}}"
+
+- name: Creates {{ca_certs_dir}} dir
+  file:
+    path: "{{ ca_certs_dir }}"
+    state: directory
+
+- name: Generate json CA CSR
+  template:
+    src: "{{ role_path }}/templates/pki/csr-template.json.j2"
+    dest: "{{ ca_certs_dir }}/csr.json"
+
+- name: Generate CA Certfiles
+  shell: |
+    if [ -f "{{ ca_certs_dir }}/{{ ca_component_name }}.pem" ]; then
+      echo "CA already present"
+    else
+      cfssl gencert -initca {{ ca_certs_dir }}/csr.json | cfssljson -bare {{ ca_certs_dir }}/{{ ca_component_name }}
+    fi
+  register: comp_cert
+  
+- debug:
+    msg: "{{ comp_cert }}"

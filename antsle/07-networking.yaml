@@ -10,3 +10,18 @@
 
   - name: Deploy CoreDNS
     command: "kubectl apply -f {{ playbook_dir }}/files/coredns/coredns.yaml --kubeconfig {{ conf_dir }}/admin/admin.kubeconfig"
+
+  # Tekton: kubectl apply --filename https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
+# Knative:
+  # Serving:  
+    # 1. kubectl apply --filename https://github.com/knative/serving/releases/download/v0.11.0/serving-crds.yaml
+    # 2. kubectl apply --filename https://github.com/knative/serving/releases/download/v0.11.0/serving-core.yaml
+    # 3. kubectl apply --filename https://github.com/knative/serving/releases/download/v0.11.1/monitoring.yaml
+# Ambasador:
+# kubectl apply --filename https://getambassador.io/yaml/ambassador/ambassador-knative.yaml
+# kubectl apply --filename https://getambassador.io/yaml/ambassador/ambassador-service.yaml
+
+# Metrics server:
+# git clone https://github.com/kubernetes-sigs/metrics-server.git
+# kubectl apply -f metrics-server/deploy/1.8+/
+# kubectl create rolebinding kube-proxy-metrics --clusterrole=admin --user=system:kube-proxy --namespace=knative-serving

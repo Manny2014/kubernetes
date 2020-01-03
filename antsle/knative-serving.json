@@ -1,0 +1,24 @@
+{
+    "apiVersion": "v1",
+    "kind": "Namespace",
+    "metadata": {
+        "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Namespace\",\"metadata\":{\"annotations\":{},\"labels\":{\"istio-injection\":\"enabled\",\"serving.knative.dev/release\":\"v0.11.0\"},\"name\":\"knative-serving\"}}\n"
+        },
+        "creationTimestamp": "2019-12-27T20:28:16Z",
+        "deletionTimestamp": "2019-12-27T21:25:37Z",
+        "labels": {
+            "istio-injection": "enabled",
+            "serving.knative.dev/release": "v0.11.0"
+        },
+        "name": "knative-serving",
+        "resourceVersion": "10264",
+        "selfLink": "/api/v1/namespaces/knative-serving",
+        "uid": "872bbc5a-a3d0-4ca6-8ca5-a7b4a4b38f93"
+    },
+    "spec": {
+    },
+    "status": {
+        "phase": "Terminating"
+    }
+}

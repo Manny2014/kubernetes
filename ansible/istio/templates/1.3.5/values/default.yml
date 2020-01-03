@@ -1,10 +1,12 @@
 gateways:
   enabled: true
   istio-ingressgateway:
+    # type: NodePort
+    # TODO: Conditionally set this
     serviceAnnotations:
       service.beta.kubernetes.io/aws-load-balancer-type: alb
-      domainName: "kubernetes.manny87.com" # TODO: NOT SURE IF IT WILL WORK
-      # service.beta.kubernetes.io/aws-load-balancer-internal: 0.0.0.0/0
+      # domainName: "kubernetes.manny87.com" # TODO: NOT SURE IF IT WILL WORK
+      service.beta.kubernetes.io/aws-load-balancer-internal: 0.0.0.0/0
     secretVolumes:
     - name: ingressgateway-certs
       secretName: istio-ingressgateway-certs
@@ -24,7 +26,7 @@ gateways:
     - name: jaeger-ingressgateway-ca-certs
       secretName: jaeger-ingressgateway-certs
       mountPath: /etc/istio/jaeger-ingressgateway-certs
-#
+
 # sidecar-injector webhook configuration, refer to the
 # charts/sidecarInjectorWebhook/values.yaml for detailed configuration
 #
@@ -56,7 +58,10 @@ mixer:
 # @see charts/pilot/values.yaml
 pilot:
   enabled: true
-
+  resources:
+    requests:
+      cpu: 250m
+      memory: 1024Mi
 #
 # security configuration
 #
@@ -130,7 +135,7 @@ global:
   mtls:
     # Default setting for service-to-service mtls. Can be set explicitly using
     # destination rules or service annotations.
-    enabled: true
+    enabled: false
 
   # Whether to restrict the applications namespace the controller manages;
   # If not set, controller watches all namespaces

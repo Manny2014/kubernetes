@@ -1,0 +1,8 @@
+apiVersion: getambassador.io/v1
+kind:  Mapping
+metadata:
+  name:  httpbin
+spec:
+  prefix: /
+  service: helloworld-go.default.10.10.1.22.xip.io:28639
+  host_rewrite: helloworld-go.default.10.10.1.22.xip.io

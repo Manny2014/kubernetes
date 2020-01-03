@@ -1,14 +1,21 @@
-
-
-
-
 - name: Creates Certs directory
   file:
-    path: "{{tmp_dir}}/certs/{{item}}"
+    path: "{{certifitaces_dir}}"
     state: directory
     force: true
   when:
   - self_signed_certs
+
+# - include_tasks: "../../common/tasks/ca-certificate.yaml"
+#   with_items:
+#   - { cn_name: "Istio", o_name: "Istio", ou_name: "IL"}
+
+# - include_tasks: "{{playbook_dir}}/tasks/component-with-hosts-certificate.yaml"
+#   with_items:
+#   - { component: "grafana", profile: "kubernetes", cn_name: "grafana.{{ domain }}", o_name: "grafana.{{ domain }}", ou_name: "IstioControlPlane", hosts: "antlet20,antlet21,antlet22,10.10.1.20,10.10.1.21,10.10.1.22,192.168.1.132,192.168.1.133,192.168.1.134"}
+#   - { component: "kiali", profile: "kubernetes", cn_name: "kiali.{{ domain }}", o_name: "kiali.{{ domain }}", ou_name: "IstioControlPlane", hosts: "antlet20,antlet21,antlet22,10.10.1.20,10.10.1.21,10.10.1.22,192.168.1.132,192.168.1.133,192.168.1.134"}
+#   - { component: "prometheus", profile: "kubernetes", cn_name: "prometheus.{{ domain }}", o_name: "prometheus.{{ domain }}", ou_name: "IstioControlPlane", hosts: "antlet20,antlet21,antlet22,10.10.1.20,10.10.1.21,10.10.1.22,192.168.1.132,192.168.1.133,192.168.1.134"}
+#   - { component: "jaeger", profile: "kubernetes", cn_name: "jaeger.{{ domain }}", o_name: "jaeger.{{ domain }}", ou_name: "IstioControlPlane", hosts: "antlet20,antlet21,antlet22,10.10.1.20,10.10.1.21,10.10.1.22,192.168.1.132,192.168.1.133,192.168.1.134"}
 
 - name: Base Cert path for  {{item}}
   set_fact:

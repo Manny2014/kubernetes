@@ -1,3 +1,3 @@
 ---
-dependencies:
-- k8s-cluster
+dependencies: []
+# - k8s-cluster

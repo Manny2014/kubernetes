@@ -17,4 +17,4 @@
       run_once: yes
 
   roles:
-    - knative
+    - istio

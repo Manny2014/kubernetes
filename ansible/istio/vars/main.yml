@@ -10,7 +10,8 @@ istio_values: ""
 
 # CERT GEN
 self_signed_certs: true
-certifitaces_dir: ""
+certifitaces_dir: "{{ role_path }}/.generated/certs"
+
 domain: kubernetes.manny87.com
 
 
