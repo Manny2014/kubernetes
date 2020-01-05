@@ -1,0 +1,35 @@
+- debug:
+    msg: "Attempting to add vdisk for - antlet: {{ antlet_name }}"
+
+- name: Get Vdisk
+  uri:
+    url: "{{ antsle_api_url }}/antlets/{{ antlet_name }}/vdisks/kubelet.qcow2"
+    method: GET
+    body_format: json
+    headers:
+      Content-Type: application/json
+      Authorization: "Token {{ antsle_token }}" 
+  register: get_antlet_vdisk_resp
+  ignore_errors: yes
+
+- debug:
+    msg: "{{get_antlet_vdisk_resp}}"
+
+- name: Add Nic VDisk
+  uri:
+    url: "{{ antsle_api_url }}/antlets/{{ antlet_name }}/vdisks"
+    method: POST
+    body_format: json
+    status_code: 201
+    body: "{{ lookup('file', vdisk_json ) }}"
+    headers:
+      Content-Type: application/json
+      Authorization: "Token {{ antsle_token }}" 
+  vars:
+    vdisk_json: "../files/vdisks/{{ antlet_name }}.json"
+  register: vdisk_out
+  when: "'errors' in get_antlet_vdisk_resp.json"
+
+- debug:
+    msg: "{{vdisk_out}}"
+  when: "'errors' in get_antlet_vdisk_resp.json"

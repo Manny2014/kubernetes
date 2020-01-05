@@ -1,0 +1,160 @@
+- hosts: localhost
+  vars_files:
+    - vars.yaml
+  tasks:
+  - include_tasks: "{{ shared_tasks_dir }}/base_dirs.yaml"
+
+  - terraform:
+      project_path: "{{ playbook_dir }}/terraform/"
+      state: present
+    register: terraform_output
+    loop: # TO ENABLE AUTOSTART
+    - 1
+    - 2
+  
+  - debug:
+      var: terraform_output
+
+  # GENERATE CA CERTS
+  - include_tasks: "{{ shared_tasks_dir }}/ca-certificate.yaml"
+    with_items:
+    - { cn_name: "Kubernetes", o_name: "Kubernetes", ou_name: "IL"}
+
+  # GENERATE CONTROL PLANE CERTS
+  - include_tasks: "{{ shared_tasks_dir }}component-certificate.yaml"
+    with_items:
+    - { component: "admin", profile: "kubernetes", cn_name: "admin", o_name: "system:masters", ou_name: "Antsle"}
+    - { component: "proxy-user", profile: "kubernetes", cn_name: "proxy-user", o_name: "system:masters", ou_name: "Antsle"}
+    - { component: "kube-controller-manager", profile: "kubernetes", cn_name: "system:kube-controller-manager", o_name: "system:kube-controller-manager", ou_name: "Antsle"}
+    - { component: "kube-proxy", profile: "kubernetes", cn_name: "system:kube-proxy", o_name: "system:node-proxier", ou_name: "Antsle"}
+    - { component: "kube-scheduler", profile: "kubernetes", cn_name: "system:kube-scheduler", o_name: "system:kube-scheduler", ou_name: "Antsle"}
+    - { component: "service-accounts", profile: "kubernetes", cn_name: "service-accounts", o_name: "Kubernetes", ou_name: "Antsle"}
+
+  # GENERATE COMPONENT/USER CERTS
+  - include_tasks: "{{ shared_tasks_dir }}/component-with-hosts-certificate.yaml"
+    with_items:
+    # - { component: "antlet10", profile: "kubernetes", cn_name: "system:node:antlet10", o_name: "system:nodes", ou_name: "Antsle", hosts: "10.96.0.1,10.32.0.1,127.0.0.1,localhost,antlet10,10.10.1.10,192.168.1.132"}
+    # - { component: "antlet11", profile: "kubernetes", cn_name: "system:node:antlet11", o_name: "system:nodes", ou_name: "Antsle", hosts: "10.96.0.1,10.32.0.1,127.0.0.1,localhost,antlet11,10.10.1.11,192.168.1.133"}
+    # - { component: "antlet12", profile: "kubernetes", cn_name: "system:node:antlet12", o_name: "system:nodes", ou_name: "Antsle", hosts: "10.96.0.1,10.32.0.1,127.0.0.1,localhost,antlet12,10.10.1.12,192.168.1.134"}
+    - { component: "antlet20", profile: "kubernetes", cn_name: "system:node:antlet20", o_name: "system:nodes", ou_name: "Antsle", hosts: "10.96.0.1,10.32.0.1,127.0.0.1,localhost,antlet20,10.10.1.20,192.168.1.132"}
+    - { component: "antlet21", profile: "kubernetes", cn_name: "system:node:antlet21", o_name: "system:nodes", ou_name: "Antsle", hosts: "10.96.0.1,10.32.0.1,127.0.0.1,localhost,antlet21,10.10.1.21,192.168.1.133"}
+    - { component: "antlet22", profile: "kubernetes", cn_name: "system:node:antlet22", o_name: "system:nodes", ou_name: "Antsle", hosts: "10.96.0.1,10.32.0.1,127.0.0.1,localhost,antlet22,10.10.1.22,192.168.1.134"}
+    - { component: "kube-apiserver", profile: "kubernetes", cn_name: "kubernetes", o_name: "Kubernetes", ou_name: "Antsle", hosts: "antlet10,antlet11,antlet12,antlet30,10.32.0.1,10.96.0.1,127.0.0.1,localhost,10.10.1.10,10.10.1.11,10.10.1.12,192.168.1.129,192.168.1.130,192.168.1.131,192.168.1.128,10.10.1.30,{{k8s_dns_names}}"}
+
+  # GENERATE KUBECONFIGS
+  - name: Generate worker nodes configs
+    shell: |
+      kubectl config set-cluster {{ cluster_name }} --certificate-authority={{ certs_dir }}/ca/ca.pem --embed-certs=true --server={{ master_url }} --kubeconfig={{conf_dir}}/{{item}}/{{item}}.kubeconfig
+      kubectl config set-credentials system:node:{{item}} --client-certificate={{ certs_dir }}/{{ item }}/{{item}}.pem --client-key={{certs_dir}}/{{item}}/{{item}}-key.pem --embed-certs=true --kubeconfig={{conf_dir}}/{{item}}/{{item}}.kubeconfig
+      kubectl config set-context default --cluster={{ cluster_name }} --user=system:node:{{item}} --kubeconfig={{conf_dir}}/{{item}}/{{item}}.kubeconfig
+      kubectl config use-context default --kubeconfig={{conf_dir}}/{{item}}/{{item}}.kubeconfig
+    with_items: "{{ groups['k8s1-worker'] }}"
+  
+  - name: Generate Proxy configs
+    shell: |
+      kubectl config set-cluster {{ cluster_name }} --certificate-authority={{ certs_dir }}/ca/ca.pem --embed-certs=true --server={{ item.master_url }} --kubeconfig={{ conf_dir }}/{{ item.component }}/{{ item.component }}.kubeconfig
+      kubectl config set-credentials {{ item.user }} --client-certificate={{ certs_dir }}/{{ item.component }}/{{ item.component }}.pem --client-key={{certs_dir}}/{{ item.component }}/{{ item.component }}-key.pem --embed-certs=true --kubeconfig={{ conf_dir }}/{{ item.component }}/{{ item.component }}.kubeconfig
+      kubectl config set-context default --cluster={{ cluster_name }} --user={{ item.user }} --kubeconfig={{ conf_dir }}/{{ item.component }}/{{ item.component }}.kubeconfig
+      kubectl config use-context default --kubeconfig={{ conf_dir }}/{{ item.component }}/{{ item.component }}.kubeconfig
+    with_items:
+    - { component: "kube-proxy", user: "system:kube-proxy", master_url: "{{ master_url }}"}
+    - { component: "kube-controller-manager", user: "system:kube-controller-manager", master_url: "https://127.0.0.1:6443"}
+    - { component: "kube-scheduler", user: "system:kube-scheduler", master_url: "https://127.0.0.1:6443"}
+    - { component: "admin", user: "admin", master_url: "{{ master_url }}"}
+  
+  # START ANTLETS
+  - include_tasks: "{{ shared_tasks_dir }}/antlet_get.yaml"
+  
+  # ADD NIC TO NODES
+  - include_tasks: "{{ shared_tasks_dir }}/antlet_nic.yaml"
+    vars:
+      antlet_name: "{{ item.dname }}"
+      mac: "{{ antlet_nic_macs[item.dname]['mac'] }}"
+      nic_type: "bridge"
+      source: "{{ antlet_nic_macs[item.dname]['source'] }}"
+      nic_model: "virtio"
+    with_items:  "{{ registered_antlets }}"
+    when: '"k8s1-" in item.dname'
+  
+  # TODO: Make dynamic for names
+  - include_tasks: "{{ shared_tasks_dir }}/antlet_vdisk.yaml"
+    vars:
+      antlet_name: "{{ item.dname}}"
+    with_items:  "{{ registered_antlets }}"
+    when: '"k8s1-worker" in item.dname'
+
+  - include_tasks: "{{ shared_tasks_dir }}/antlet_start.yaml"
+    vars:
+      antlet_name: "{{ item.dname }}" 
+    with_items:  "{{ registered_antlets }}"
+    when: '"k8s1-" in item.dname'
+
+  - pause:
+      prompt: "Have the antlets been started?"
+
+# TODO: ADD START NODES STEPS
+- hosts: k8s1-cluster
+  vars_files:
+    - vars.yaml
+  tasks:
+  - hostname:
+      name: "{{ inventory_hostname }}"
+  
+  - include_tasks: "{{playbook_dir}}/tasks/packages.yaml"
+  
+  - include_tasks: "{{playbook_dir}}/tasks/users.yaml"
+  
+  - name: Creates Kubernetes Conf Directory
+    file:
+      path: "{{ kubernetes_conf_dir }}"
+      state: directory
+      recurse: yes
+  
+  - name: Add IP address of all hosts to all hosts
+    lineinfile:
+      dest: /etc/hosts
+      regexp: '.*{{ item }}$'
+      line: "{{ hostvars[item].ansible_host }} {{item}}"
+      state: present
+    when: hostvars[item].ansible_host is defined
+    with_items: "{{ groups.all }}"
+
+  - name: Disable SELinux
+    selinux:
+      policy: targeted
+      state: disabled
+
+  - name: Disable swap
+    command: swapoff -a
+
+  - name: Disable SWAP in fstab since kubernetes can't work with swap enabled (2/2)
+    command: sed -i '/swap/d' /etc/fstab
+
+  - sysctl:
+      name: net.ipv4.ip_forward
+      value: '1'
+      sysctl_set: yes
+      state: present
+      reload: yes
+  
+  - sysctl:
+      name: net.ipv4.conf.all.forwarding
+      value: '1'
+      sysctl_set: yes
+      state: present
+      reload: yes
+  
+  - sysctl:
+      name: net.ipv6.conf.all.disable_ipv6
+      value: '1'
+      sysctl_set: yes
+      state: present
+      reload: yes
+
+  - sysctl:
+      name: net.ipv6.conf.default.disable_ipv6
+      value: '1'
+      sysctl_set: yes
+      state: present
+      reload: yes
+

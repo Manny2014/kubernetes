@@ -1,0 +1,21 @@
+all:
+  children:
+    antsle-master:
+      hosts:
+        192.168.1.122:
+    k8s1-master:
+      hosts:
+        antlet10:
+          ansible_host: 192.168.1.129
+    k8s1-worker:
+      hosts:
+        antlet20:
+          ansible_host: 192.168.1.132
+        antlet21:
+          ansible_host: 192.168.1.133
+        antlet22:
+          ansible_host: 192.168.1.134
+    k8s1-cluster:
+       children:
+          k8s1-master:
+          k8s1-worker:

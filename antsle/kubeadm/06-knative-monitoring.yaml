@@ -1,0 +1,15 @@
+- hosts:  localhost
+  gather_facts: false
+  vars_files:
+    - vars.yaml
+  tasks:
+  - name: istio-system hack
+    command: kubectl --kubeconfig={{ playbook_dir }}/adm.kubeconfig apply -f {{ item }}
+    loop:
+    - "{{ playbook_dir }}/files/knative-monitoring/"
+
+  - name: install knative monitoring
+    command: kubectl --kubeconfig={{ playbook_dir }}/adm.kubeconfig apply -f {{ item }}
+    loop:
+    - "{{ playbook_dir }}/files/knative-monitoring/"
+    - https://github.com/knative/serving/releases/download/{{ knative_serving_version }}/monitoring.yaml

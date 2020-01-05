@@ -1,0 +1,107 @@
+---
+# Source: prometheus-node-exporter/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: local-prometheus-node-exporter
+  labels:
+    app: prometheus-node-exporter
+    chart: prometheus-node-exporter-0.2.0    
+    release: "local"
+    heritage: "Tiller"
+---
+# Source: prometheus-node-exporter/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: local-prometheus-node-exporter
+  labels:
+    app: prometheus-node-exporter
+    chart: prometheus-node-exporter-0.2.0
+    release: local
+    heritage: Tiller
+spec:
+  type: ClusterIP
+  ports:
+    - port: 9100
+      targetPort: 9100
+      protocol: TCP
+      name: metrics
+  selector:
+    app: prometheus-node-exporter
+    release: local
+
+---
+# Source: prometheus-node-exporter/templates/daemonset.yaml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: local-prometheus-node-exporter
+  labels:
+    app: prometheus-node-exporter
+    chart: prometheus-node-exporter-0.2.0
+    release: local
+    heritage: Tiller
+spec:
+  selector:
+    matchLabels:
+      app: prometheus-node-exporter
+      release: local
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1      
+  template:
+    metadata:
+      labels:
+        app: prometheus-node-exporter
+        release: local
+    spec:
+      serviceAccountName: local-prometheus-node-exporter
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+      containers:
+        - name: node-exporter
+          image: "quay.io/prometheus/node-exporter:v0.15.2"
+          imagePullPolicy: IfNotPresent
+          args:
+            - --path.procfs=/host/proc
+            - --path.sysfs=/host/sys
+            - --web.listen-address=0.0.0.0:9100
+          ports:
+            - name: metrics
+              containerPort: 9100
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 9100
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 9100
+          resources:
+            {}
+            
+          volumeMounts:
+            - name: proc
+              mountPath: /host/proc
+              readOnly:  true
+            - name: sys
+              mountPath: /host/sys
+              readOnly: true
+      hostNetwork: true
+      hostPID: true
+      tolerations:
+        - effect: NoSchedule
+          operator: Exists
+        
+      volumes:
+        - name: proc
+          hostPath:
+            path: /proc
+        - name: sys
+          hostPath:
+            path: /sys
+

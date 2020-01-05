@@ -1,0 +1,35 @@
+- hosts: k8s1-master[0]
+  vars_files:
+    - vars.yaml
+  tasks:
+    - name: initialize the cluster
+      shell: kubeadm init --pod-network-cidr={{ pod_ip_cidr }} >> cluster_initialized.txt
+      args:
+        chdir: $HOME
+        creates: cluster_initialized.txt
+
+    - name: create .kube directory
+      file:
+        path: $HOME/.kube
+        state: directory
+        mode: 0755
+
+    - name: copy admin.conf to user's kube config
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: $HOME/.kube/config
+        remote_src: yes
+
+    - name: install Pod network
+      shell: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml >> pod_network_setup.txt
+      args:
+        chdir: $HOME
+        creates: pod_network_setup.txt
+
+    - name: Store file into /etc/kubernetes/admin.conf
+      fetch:
+        src: /etc/kubernetes/admin.conf
+        dest: adm.kubeconfig
+        flat: yes
+
+# kubectl taint nodes --all node-role.kubernetes.io/master-

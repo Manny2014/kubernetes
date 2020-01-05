@@ -1,0 +1,10 @@
+- hosts:  localhost
+  gather_facts: false
+  vars_files:
+    - vars.yaml
+  tasks:
+  - name: install knative eventing
+    command: kubectl --kubeconfig={{ playbook_dir }}/adm.kubeconfig apply -f {{ item }}
+    loop:
+    - https://github.com/knative/eventing/releases/download/{{ knative_eventing_version }}/release.yaml
+    # - https://github.com/knative/eventing/releases/download/{{ knative_eventing_version }}/in-memory-channel.yaml

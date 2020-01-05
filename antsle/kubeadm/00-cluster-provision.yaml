@@ -1,0 +1,44 @@
+- hosts: localhost
+  vars_files:
+    - vars.yaml
+  tasks:
+  - include_tasks: "{{ shared_tasks_dir }}/base_dirs.yaml"
+
+  - terraform:
+      project_path: "{{ playbook_dir }}/terraform/"
+      state: present
+    register: terraform_output
+    loop: # TO ENABLE AUTOSTART
+    - 1
+    - 2
+  
+  - debug:
+      var: terraform_output
+
+  # START ANTLETS
+  - include_tasks: "{{ shared_tasks_dir }}/antlet_get.yaml"
+  
+  # ADD NIC TO NODES
+  - include_tasks: "{{ shared_tasks_dir }}/antlet_nic.yaml"
+    vars:
+      antlet_name: "{{ item.dname }}"
+      mac: "{{ antlet_nic_macs[item.dname]['mac'] }}"
+      nic_type: "bridge"
+      source: "{{ antlet_nic_macs[item.dname]['source'] }}"
+      nic_model: "virtio"
+    with_items:  "{{ registered_antlets }}"
+    when: '"k8s1-" in item.dname'
+  
+  # TODO: Make dynamic for names
+  - include_tasks: "{{ shared_tasks_dir }}/antlet_vdisk.yaml"
+    vars:
+      antlet_name: "{{ item.dname}}"
+    with_items:  "{{ registered_antlets }}"
+    when: '"k8s1-" in item.dname'
+
+  - include_tasks: "{{ shared_tasks_dir }}/antlet_start.yaml"
+    vars:
+      antlet_name: "{{ item.dname }}" 
+    with_items:  "{{ registered_antlets }}"
+    when: '"k8s1-" in item.dname'
+

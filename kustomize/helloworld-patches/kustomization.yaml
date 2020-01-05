@@ -1,0 +1,10 @@
+namePrefix: dev-
+commonLabels:
+  variant: dev
+commonAnnotations:
+  note: Patch1
+bases:
+- ../helloworld
+patches:
+- replica_count.yaml
+- additional_data.yaml

@@ -1,0 +1,11 @@
+- hosts:  localhost
+  gather_facts: false
+  vars_files:
+    - vars.yaml
+  tasks:
+  - name: install tekton
+    command: kubectl --kubeconfig={{ playbook_dir }}/adm.kubeconfig apply -f {{ item }}
+    loop:
+    - https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
+    - https://storage.googleapis.com/tekton-releases/triggers/latest/release.yaml
+    - https://github.com/tektoncd/dashboard/releases/download/v0.3.0/dashboard-latest-release.yaml

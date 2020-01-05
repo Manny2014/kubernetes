@@ -1,0 +1,16 @@
+- hosts:  localhost
+  gather_facts: false
+  vars_files:
+    - vars.yaml
+  tasks:
+  # Will use knative-monitoring node-exporter
+  # - name: install prometheus node exporter server
+  #   command: kubectl --kubeconfig={{ playbook_dir }}/adm.kubeconfig apply -f files/prometheus/
+
+  # - git:
+  #     repo: 'https://github.com/kubernetes-sigs/metrics-server.git'
+  #     dest:  metrics-server
+
+  - name: install metrics server
+    command: kubectl --kubeconfig={{ playbook_dir }}/adm.kubeconfig apply -f files/metrics/1.7/
+  

@@ -1,0 +1,58 @@
+- hosts: k8s1-cluster
+  vars_files:
+    - vars.yaml
+  tasks:
+  - name: Add the br_netfilter module
+    modprobe:
+      name: br_netfilter
+      state: present
+  
+  - name: Reload sysctl
+    command: sysctl -p
+
+  - sysctl:
+      name: net.ipv4.ip_forward
+      value: '1'
+      sysctl_set: yes
+      state: present
+      reload: yes
+  
+  - sysctl:
+      name: net.ipv4.conf.all.forwarding
+      value: '1'
+      sysctl_set: yes
+      state: present
+      reload: yes
+
+  - sysctl:
+      name: net.bridge.bridge-nf-call-iptables
+      value: '1'
+      sysctl_set: yes
+      state: present
+      reload: yes
+    register: sysctl_output
+
+  - sysctl:
+      name: net.bridge.bridge-nf-call-ip6tables
+      value: '1'
+      sysctl_set: yes
+      state: present
+      reload: yes
+    register: sysctl_output
+
+  - name: Restart service networkservice
+    service:
+      name: network
+      state: restarted
+    when: sysctl_output.changed
+
+  - name: Start/Enable Services
+    systemd:
+      state: started
+      daemon_reload: yes
+      name: "{{ item }}"
+      enabled: yes
+    loop:
+    - docker
+    - kubelet
+  

@@ -1,0 +1,29 @@
+- hosts: localhost
+  vars_files:
+    - vars.yaml
+  tasks:
+  - include_tasks: "../ansible/tasks/antlet_get.yaml"
+  
+  - include_tasks: "../ansible/tasks/antlet_stop.yaml"
+    vars:
+      antlet_name: "{{ item.dname }}" 
+    with_items:  "{{ registered_antlets }}"
+    when: '"k8s1-" in item.dname'
+
+  - include_tasks: "../ansible/tasks/antlet_wait_state.yaml"
+    vars:
+      antlet_to_wait_for: "{{ item.dname }}" 
+      state_name: "Stopped"
+    with_items:  "{{ registered_antlets }}"
+    when: '"k8s1-" in item.dname'
+
+  - terraform:
+      project_path: "{{ playbook_dir }}/terraform/"
+      state: absent
+    register: terraform_output
+    loop: # TO ENABLE AUTOSTART
+    - 1
+    - 2
+  
+  - debug:
+      var: terraform_output

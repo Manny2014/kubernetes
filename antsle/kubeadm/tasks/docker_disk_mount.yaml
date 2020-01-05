@@ -1,0 +1,22 @@
+- name: Create a xfs filesystem
+  filesystem:
+    fstype: xfs
+    dev: /dev/vdb
+    opts: -n ftype=1
+
+- name: Mount and bind a volume
+  mount:
+    path: "/var/lib/docker/"
+    src: /dev/vdb
+    state: mounted
+    fstype: xfs
+
+# CLEAN UP
+# - name: Unmount a mounted volume
+#   mount:
+#     path: /tmp/mnt-pnt
+#     state: unmounted
+# - name: Creates Kubelete Dir
+#   file:
+#     path: "{{ kubelet_dir }}/"
+#     state: absent

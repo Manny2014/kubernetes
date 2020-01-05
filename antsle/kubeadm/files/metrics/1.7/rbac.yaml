@@ -1,0 +1,16 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  creationTimestamp: "2020-01-05T05:40:40Z"
+  name: kube-proxy-metrics
+  resourceVersion: "14395"
+  selfLink: /apis/rbac.authorization.k8s.io/v1/clusterrolebindings/kube-proxy-metrics
+  uid: f05cab05-25a6-45f8-8b45-675a673a6210
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: system:serviceaccount:kube-system:metrics-server

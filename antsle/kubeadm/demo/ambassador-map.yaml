@@ -1,0 +1,18 @@
+# curl http://helloworld-go.default.192.168.1.132.xip.io:30080/manny
+apiVersion: getambassador.io/v1
+kind:  Mapping
+metadata:
+  name:  httpbin
+spec:
+  prefix: /manny/
+  service: helloworld-go.default.192.168.1.132.xip.io:30080
+  host_rewrite: helloworld-go.default.192.168.1.132.xip.io
+---
+apiVersion: getambassador.io/v1
+kind:  Mapping
+metadata:
+  name:  httpbin-two
+spec:
+  prefix: /manny
+  service: helloworld-go.default.192.168.1.132.xip.io:30080
+  host_rewrite: helloworld-go.default.192.168.1.132.xip.io

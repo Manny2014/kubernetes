@@ -1,0 +1,34 @@
+- hosts: k8s1-cluster
+  vars_files:
+    - vars.yaml
+  tasks:
+  - hostname:
+      name: "{{ inventory_hostname }}"
+  
+  - include_tasks: "{{playbook_dir}}/tasks/base_packages.yaml"
+  
+  - include_tasks: "{{playbook_dir}}/tasks/docker_disk_mount.yaml"
+
+  - include_tasks: "{{playbook_dir}}/tasks/docker_packages.yaml"
+
+  - include_tasks: "{{playbook_dir}}/tasks/kube_packages.yaml"
+  
+  - name: Add IP address of all hosts to all hosts
+    lineinfile:
+      dest: /etc/hosts
+      regexp: '.*{{ item }}$'
+      line: "{{ hostvars[item].ansible_host }} {{item}}"
+      state: present
+    when: hostvars[item].ansible_host is defined
+    with_items: "{{ groups.all }}"
+
+  - name: Disable SELinux
+    selinux:
+      policy: targeted
+      state: disabled
+
+  - name: Disable swap
+    command: swapoff -a
+
+  - name: Disable SWAP in fstab since kubernetes can't work with swap enabled (2/2)
+    command: sed -i '/swap/d' /etc/fstab

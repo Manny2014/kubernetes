@@ -1,0 +1,15 @@
+- hosts:  localhost
+  gather_facts: false
+  vars_files:
+    - vars.yaml
+  tasks:
+  - name: install ambassador
+    command: kubectl --kubeconfig={{ playbook_dir }}/adm.kubeconfig -n default apply -f {{ item }}
+    loop:
+    - "{{ playbook_dir }}/files/ambassador/ambassador-knative.yaml"
+    - "{{ playbook_dir }}/files/ambassador/ambassador-svc.yaml"
+
+  - name: deploy knative config-domain
+    command: kubectl --kubeconfig={{ playbook_dir }}/adm.kubeconfig apply -f {{ item }}
+    loop:
+    - "{{ playbook_dir }}/files/knative/config-domain.yaml"

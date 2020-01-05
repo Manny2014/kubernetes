@@ -1,0 +1,23 @@
+- name: upgrade all packages
+  yum:
+    name: '*'
+    state: latest
+    exclude: kube*,docker*
+
+- name: yum-makecache
+  command: yum makecache
+
+- name: Install yum packages
+  yum:
+    name:
+    - wget
+    - epel-release
+    - policycoreutils-python
+    - yum-utils
+    - device-mapper-persistent-data
+    - lvm2
+    - nmap-ncat.x86_64
+    - traceroute
+    # - libselinux-python
+    # - firewalld
+    state: present
